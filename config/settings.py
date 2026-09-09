@@ -68,12 +68,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
-    # SQLite para desarrollo. En producción usar PostgreSQL + PostGIS
-    # y cambiar el ENGINE a django.contrib.gis.db.backends.postgis.
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
+    # Sin DB_NAME → SQLite (desarrollo). Con DB_NAME → PostgreSQL.
+    # En Docker Compose la base usa la imagen postgis/postgis; para geometrías
+    # migrar el ENGINE a django.contrib.gis.db.backends.postgis.
+    "default": (
+        {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER", default="forestia"),
+            "PASSWORD": config("DB_PASSWORD", default="forestia"),
+            "HOST": config("DB_HOST", default="127.0.0.1"),
+            "PORT": config("DB_PORT", default="5432"),
+        }
+        if config("DB_NAME", default="")
+        else {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -89,6 +101,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
