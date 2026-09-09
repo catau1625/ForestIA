@@ -2,6 +2,8 @@
 
 Documentación: https://open-meteo.com/en/docs
 """
+from datetime import datetime, timezone
+
 import requests
 
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
@@ -13,13 +15,18 @@ HOURLY = (
 )
 
 
+def _parse_utc(ts: str) -> datetime:
+    """Open-Meteo devuelve ISO sin offset; con timezone=GMT interpretamos como UTC."""
+    return datetime.fromisoformat(ts).replace(tzinfo=timezone.utc)
+
+
 def fetch_agro_weather(latitude: float, longitude: float, days: int = 7) -> list[dict]:
-    """Devuelve una lista de registros horarios agro para un punto geográfico."""
+    """Devuelve una lista de registros horarios agro (en UTC) para un punto geográfico."""
     params = {
         "latitude": latitude,
         "longitude": longitude,
         "hourly": HOURLY,
-        "timezone": "auto",
+        "timezone": "GMT",
         "forecast_days": days,
     }
     resp = requests.get(OPEN_METEO_URL, params=params, timeout=20)
@@ -29,7 +36,7 @@ def fetch_agro_weather(latitude: float, longitude: float, days: int = 7) -> list
     for i, ts in enumerate(data["time"]):
         records.append(
             {
-                "timestamp": ts,
+                "timestamp": _parse_utc(ts),
                 "temp_c": data["temperature_2m"][i],
                 "humidity_pct": data["relative_humidity_2m"][i],
                 "wind_ms": data["wind_speed_10m"][i],
