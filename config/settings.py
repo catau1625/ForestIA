@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     # apps de ForestIA
+    "apps.dashboard",
     "apps.crops",
     "apps.soils",
     "apps.monitoring",

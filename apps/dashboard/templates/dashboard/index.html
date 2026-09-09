@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForestIA · Panel principal</title>
+<style>
+:root{--ink:#1a1a1a;--mut:#666;--line:#e2e2e2;--bg:#f7f7f5;--card:#fff;--warn:#c9862b;--danger:#c0392b;--ok:#3a9e5c;--blue:#2f6fdd}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+main{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.logo{font-size:22px;font-weight:700}
+.logo span{color:var(--ok)}
+.pill{border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:12px;color:var(--mut);background:var(--card)}
+.pill b{color:var(--ink)}
+.grow{flex:1}
+.btn{display:inline-block;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px}
+.btn.ghost{background:#fff;color:var(--ink)}
+.subtitle{color:var(--mut);font-size:13px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi.alert .v{color:var(--danger)}
+h2{font-size:15px;font-weight:600;margin:8px 0 12px}
+.parcel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.parcel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.parcel-head h3{font-size:16px;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.danger{background:var(--danger)}
+.cols{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+@media(max-width:860px){.cols>*{grid-column:1/-1 !important}}
+.col-4{grid-column:span 4}.col-8{grid-column:span 8}.col-6{grid-column:span 6}.col-12{grid-column:span 12}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px}
+.box h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);font-weight:600;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.row:last-child{border-bottom:none}
+.row .k{color:var(--mut)}
+.row .v{font-variant-numeric:tabular-nums;font-weight:500}
+.msg{font-size:13px;padding:8px 10px;border-radius:8px;margin-bottom:6px}
+.msg.warning{background:#fdf3e3;color:#8a5a17}
+.msg.danger{background:#fbe9e7;color:#8e2418}
+.msg.info{background:#eef3fd;color:#1f4e9c}
+.msg:last-child{margin-bottom:0}
+.empty{font-size:13px;color:var(--mut)}
+.actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.foot{margin-top:24px;font-size:12px;color:var(--mut);display:flex;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main>
+  <div class="topbar">
+    <div class="logo">Forest<span>IA</span></div>
+    <span class="pill">{{ totals.parcels }} parcela{{ totals.parcels|pluralize }}</span>
+    <span class="pill">{{ totals.active_sensors }} sonda{{ totals.active_sensors|pluralize:"s" }} activa{{ totals.active_sensors|pluralize:"s" }}</span>
+    <span class="pill">{{ totals.open_alerts }} alerta{{ totals.open_alerts|pluralize }} sin reconocer</span>
+    <span class="grow"></span>
+    <a class="btn ghost" href="/admin/">Administración</a>
+    <a class="btn ghost" href="/api/v1/">API</a>
+  </div>
+  <div class="subtitle">Simulaciones agrícolas predictivas · suelo, clima y cultivo en un solo panel · actualizado {% now "d/m/Y H:i" %}</div>
+
+  <div class="kpis">
+    <div class="kpi {% if totals.critical_alerts %}alert{% endif %}"><div class="v">{{ totals.critical_alerts }}</div><div class="l">alertas críticas abiertas</div></div>
+    <div class="kpi"><div class="v">{{ totals.open_alerts }}</div><div class="l">alertas sin reconocer</div></div>
+    <div class="kpi"><div class="v">{{ totals.active_sensors }}</div><div class="l">sondas en línea</div></div>
+    <div class="kpi"><div class="v">{{ totals.parcels }}</div><div class="l">parcelas monitoreadas</div></div>
+  </div>
+
+  <h2>Parcelas</h2>
+  {% for p in parcels %}
+  <div class="parcel">
+    <div class="parcel-head">
+      <span class="dot {% if p.open_alerts %}warn{% else %}ok{% endif %}"></span>
+      <h3>{{ p.parcel.name }}</h3>
+      {% if p.parcel.area_ha %}<span class="pill">{{ p.parcel.area_ha }} ha</span>{% endif %}
+      {% if p.parcel.latitude %}<span class="pill">{{ p.parcel.latitude }}, {{ p.parcel.longitude }}</span>{% endif %}
+      {% if p.open_alerts %}<span class="pill">{{ p.open_alerts }} alerta{{ p.open_alerts|pluralize }} abierta{{ p.open_alerts|pluralize }}</span>{% endif %}
+    </div>
+    <div class="cols">
+      <div class="col-4 box">
+        <h4>Sondas de suelo</h4>
+        {% for s in p.sensors %}
+        <div class="row">
+          <span class="k">{{ s.sensor.code }} · {{ s.sensor.depth_cm }} cm</span>
+          {% if s.last %}
+          <span class="v">{{ s.last.moisture_pct|floatformat:0 }} % · {{ s.last.timestamp|date:"d/m H:i" }}</span>
+          {% else %}<span class="v">sin datos</span>{% endif %}
+        </div>
+        {% empty %}
+        <div class="empty">Sin sondas instaladas. Cargar en <a href="/admin/monitoring/sensor/">admin</a>.</div>
+        {% endfor %}
+      </div>
+      <div class="col-4 box">
+        <h4>Clima actual</h4>
+        {% if p.latest_weather %}
+        <div class="row"><span class="k">Temperatura</span><span class="v">{{ p.latest_weather.temp_c|floatformat:1 }} °C</span></div>
+        <div class="row"><span class="k">Humedad ambiente</span><span class="v">{{ p.latest_weather.humidity_pct|floatformat:0 }} %</span></div>
+        <div class="row"><span class="k">Lluvia (hora)</span><span class="v">{{ p.latest_weather.rain_mm|floatformat:1 }} mm</span></div>
+        <div class="row"><span class="k">Viento</span><span class="v">{{ p.latest_weather.wind_ms|floatformat:1 }} m/s</span></div>
+        <div class="row"><span class="k">ET0</span><span class="v">{{ p.latest_weather.et0_mm|floatformat:2 }} mm</span></div>
+        {% else %}
+        <div class="empty">Sin datos climáticos. Ejecutar <code>python manage.py sync_weather</code>.</div>
+        {% endif %}
+      </div>
+      <div class="col-4 box">
+        <h4>Estado y alertas</h4>
+        {% if p.latest_flight %}
+        <div class="row"><span class="k">NDVI (drone)</span><span class="v">{{ p.latest_flight.ndvi_mean|floatformat:2 }}</span></div>
+        <div class="row"><span class="k">Vuelo</span><span class="v">{{ p.latest_flight.flown_at|date:"d/m/Y" }}</span></div>
+        {% endif %}
+        {% if p.latest_alert %}
+        <div class="msg {{ p.latest_alert.level }}">{{ p.latest_alert.get_level_display }} · {{ p.latest_alert.message|truncatewords:14 }}</div>
+        {% else %}
+        <div class="empty">Sin alertas registradas.</div>
+        {% endif %}
+      </div>
+      <div class="col-12 box">
+        <h4>Última simulación predictiva</h4>
+        {% if p.latest_run %}
+        <div class="row"><span class="k">Cultivo</span><span class="v">{{ p.latest_run.plant }} · {{ p.latest_run.horizon_days }} días</span></div>
+        <div class="row"><span class="k">Corridas el</span><span class="v">{{ p.latest_run.created_at|date:"d/m/Y H:i" }}</span></div>
+        {% if p.latest_run.result %}
+        <div class="row"><span class="k">Biomasa final</span><span class="v">{{ p.latest_run.result.final.biomass|floatformat:2 }}</span></div>
+        <div class="row"><span class="k">Humedad / N final</span><span class="v">{{ p.latest_run.result.final.moisture_pct|floatformat:0 }} % · {{ p.latest_run.result.final.nitrogen_ppm|floatformat:0 }} ppm</span></div>
+        {% endif %}
+        <div class="actions">
+          <a class="btn" href="/api/v1/simulation/runs/{{ p.latest_run.id }}/preview/">Ver animación</a>
+          <a class="btn ghost" href="/api/v1/simulation/runs/{{ p.latest_run.id }}/">Resultado JSON</a>
+          <a class="btn ghost" href="/api/v1/simulation/runs/">Todas las corridas</a>
+        </div>
+        {% else %}
+        <div class="empty">Sin simulaciones todavía. Crear una con POST a <code>/api/v1/simulation/runs/</code> desde la <a href="/api/v1/">API</a>.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="parcel"><div class="empty">No hay parcelas cargadas. Crear la primera en <a href="/admin/soils/parcel/add/">administración</a>.</div></div>
+  {% endfor %}
+
+  <div class="foot">
+    <span>ForestIA · plataforma de simulaciones agrícolas</span>
+    <a href="/admin/">Admin</a>
+    <a href="/api/v1/">API REST</a>
+    <span>Sincronizar clima: <code>python manage.py sync_weather</code></span>
+  </div>
+</main>
+</body>
+</html>
