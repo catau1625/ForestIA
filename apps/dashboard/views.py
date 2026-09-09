@@ -1,7 +1,12 @@
 """Vista del panel principal de ForestIA."""
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from apps.alerts.models import Alert
+from apps.crops.models import Plant
+from apps.simulation.models import SimulationRun
+from apps.simulation.tasks import run_simulation_task
 from apps.soils.models import Parcel
 
 
@@ -49,5 +54,39 @@ def dashboard(request):
     return render(
         request,
         "dashboard/index.html",
-        {"parcels": parcels, "totals": totals},
+        {
+            "parcels": parcels,
+            "totals": totals,
+            "plants": Plant.objects.all(),
+            "all_parcels": Parcel.objects.all(),
+        },
     )
+
+
+MONTHS_TO_DAYS = {"3": 90, "6": 180, "12": 365}
+
+
+@require_POST
+def launch_simulation(request):
+    """Crea y ejecuta una simulación desde el formulario del panel.
+
+    Intenta encolarla en Celery; si el broker no está disponible
+    (entorno de desarrollo sin Redis), la ejecuta en el momento.
+    """
+    parcel = Parcel.objects.get(pk=request.POST["parcel"])
+    plant = Plant.objects.get(pk=request.POST["plant"])
+    run = SimulationRun.objects.create(
+        parcel=parcel,
+        plant=plant,
+        soil_profile=parcel.soil_profiles.first(),
+        horizon_days=MONTHS_TO_DAYS.get(request.POST.get("months", "6"), 180),
+        initial_moisture_pct=float(request.POST.get("moisture", 35)),
+        initial_nitrogen_ppm=float(request.POST.get("nitrogen", 70)),
+    )
+    try:
+        run_simulation_task.delay(run.id)
+        messages.success(request, f"Simulación de {plant} encolada (Celery).")
+    except Exception:  # noqa: BLE001 — broker caído: ejecutar en línea
+        run_simulation_task.apply(args=[run.id])
+        messages.success(request, f"Simulación de {plant} completada.")
+    return redirect("simulation-run-preview", pk=run.id)

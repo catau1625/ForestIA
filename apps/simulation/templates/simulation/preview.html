@@ -31,8 +31,13 @@ svg{display:block;width:100%;height:auto}
 </head>
 <body>
 <main>
+  {% if messages %}
+  <div style="background:#e9f7ee;border:1px solid #bfe6cd;color:#1f6b3a;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px">
+    {% for message in messages %}{{ message }}{% endfor %}
+  </div>
+  {% endif %}
   <h1>ForestIA · Simulación de {{ run.plant }} — {{ run.parcel }}</h1>
-  <div class="sub">Suelo {{ run.soil_profile.get_soil_type_display|default:"—" }} · horizonte {{ run.horizon_days }} días · {{ run.get_status_display }} · animación referencial de crecimiento y capas</div>
+  <div class="sub"><a href="/">← volver al panel</a> · suelo {{ run.soil_profile.get_soil_type_display|default:"—" }} · horizonte {{ run.horizon_days }} días · {{ run.get_status_display }} · animación referencial de crecimiento y capas</div>
 
   <div class="scene-wrap">
     <div class="controls">
