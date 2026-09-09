@@ -42,7 +42,14 @@ python manage.py runserver
 
 # Terminal 2: worker de Celery (necesita Redis corriendo)
 celery -A config worker -l info
+
+# Terminal 3: programador de tareas periódicas
+celery -A config beat -l info
 ```
+
+Tareas programadas (Celery Beat):
+- **Clima**: sincroniza el pronóstico Open-Meteo de todas las parcelas cada 6 horas (minuto 17).
+- **Re-simulación**: vuelve a correr la última simulación de cada parcela todos los días a las 05:23, con el pronóstico más reciente.
 
 Panel de administración: http://127.0.0.1:8000/admin/
 API REST: http://127.0.0.1:8000/api/v1/

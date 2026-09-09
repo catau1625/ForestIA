@@ -103,3 +103,20 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/1")
 CELERY_TIMEZONE = TIME_ZONE
+
+# Tareas periódicas (requiere `celery -A config beat`)
+from celery.schedules import crontab  # noqa: E402
+
+CELERY_BEAT_SCHEDULE = {
+    # Pronóstico agro fresco cada 6 horas (minuto 17, fuera de hora pico)
+    "sync-weather-6h": {
+        "task": "apps.weather.tasks.sync_weather_all",
+        "schedule": crontab(minute=17, hour="*/6"),
+        "kwargs": {"days": 3},
+    },
+    # Re-simulación diaria de las parcelas activas (05:23, antes del día de campo)
+    "resimulate-daily": {
+        "task": "apps.simulation.tasks.resimulate_parcels",
+        "schedule": crontab(minute=23, hour=5),
+    },
+}

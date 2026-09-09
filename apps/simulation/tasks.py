@@ -69,6 +69,30 @@ def run_simulation_task(self, run_id: int):
         raise self.retry(exc=exc, countdown=10)
 
 
+@app.task(bind=True, max_retries=2)
+def resimulate_parcels(self):
+    """Re-ejecuta la última simulación completada de cada parcela.
+
+    Corre una vez al día vía Celery Beat: mantiene las predicciones
+    alineadas con el pronóstico climático más reciente.
+    """
+    from apps.soils.models import Parcel
+
+    for parcel in Parcel.objects.all():
+        last = parcel.simulations.filter(status="done").first()
+        if not last:
+            continue
+        run = SimulationRun.objects.create(
+            parcel=parcel,
+            plant=last.plant,
+            soil_profile=last.soil_profile,
+            horizon_days=last.horizon_days,
+            initial_moisture_pct=last.initial_moisture_pct,
+            initial_nitrogen_ppm=last.initial_nitrogen_ppm,
+        )
+        run_simulation_task.apply(args=[run.id])
+
+
 def _generate_alerts(run: SimulationRun):
     final = run.result["final"]
     if final["moisture_pct"] < 18:
