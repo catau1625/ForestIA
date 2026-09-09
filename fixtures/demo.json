@@ -147,5 +147,15 @@
       "depth_cm": 30,
       "protocol": "lora"
     }
+  },
+  {
+    "model": "notifications.notificationchannel",
+    "pk": 1,
+    "fields": {
+      "name": "WhatsApp del productor",
+      "type": "whatsapp",
+      "config": {"phone": "+5493510000000"},
+      "is_active": true
+    }
   }
 ]

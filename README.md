@@ -51,6 +51,21 @@ Tareas programadas (Celery Beat):
 - **Clima**: sincroniza el pronóstico Open-Meteo de todas las parcelas cada 6 horas (minuto 17).
 - **Re-simulación**: vuelve a correr la última simulación de cada parcela todos los días a las 05:23, con el pronóstico más reciente.
 
+## Notificaciones (WhatsApp listo para integrar)
+
+Cada alerta generada se despacha por los canales activos (`apps.notifications`)
+y queda registrada en `NotificationLog` con estado enviada / pendiente / fallida.
+El canal de WhatsApp ya está cableado: para activarlo hay que:
+
+1. Elegir proveedor (Meta WhatsApp Business Cloud API, Twilio, CallMeBot...).
+2. Definir en el entorno: `WHATSAPP_TOKEN` (y `WHATSAPP_API_URL` si aplica).
+3. Completar la llamada a la API en `apps/notifications/dispatchers.py`
+   (`WhatsAppDispatcher.send()`, el punto `TODO(integración)` está marcado).
+4. Cargar el teléfono destino en la configuración JSON del canal (admin:
+   "WhatsApp del productor" → `{"phone": "+549..."}`).
+
+Hasta que se complete, los envíos quedan *pendientes* sin romper nada.
+
 Panel de administración: http://127.0.0.1:8000/admin/
 API REST: http://127.0.0.1:8000/api/v1/
 

@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "apps.weather",
     "apps.simulation",
     "apps.alerts",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,10 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/1")
 CELERY_TIMEZONE = TIME_ZONE
+
+# Notificaciones (WhatsApp u otros canales). Ver apps/notifications/dispatchers.py.
+WHATSAPP_TOKEN = config("WHATSAPP_TOKEN", default="")
+WHATSAPP_API_URL = config("WHATSAPP_API_URL", default="https://graph.facebook.com/v21.0")
 
 # Tareas periódicas (requiere `celery -A config beat`)
 from celery.schedules import crontab  # noqa: E402

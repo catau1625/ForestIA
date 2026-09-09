@@ -95,16 +95,29 @@ def resimulate_parcels(self):
 
 def _generate_alerts(run: SimulationRun):
     final = run.result["final"]
+    created = []
     if final["moisture_pct"] < 18:
-        Alert.objects.create(
-            parcel=run.parcel,
-            level=Alert.Level.WARNING,
-            message=f"Riego recomendado: humedad proyectada a {final['moisture_pct']} % "
-            f"en {run.horizon_days} días.",
+        created.append(
+            Alert.objects.create(
+                parcel=run.parcel,
+                level=Alert.Level.WARNING,
+                message=f"Riego recomendado: humedad proyectada a {final['moisture_pct']} % "
+                f"en {run.horizon_days} días.",
+            )
         )
     if final["nitrogen_ppm"] < 28:
-        Alert.objects.create(
-            parcel=run.parcel,
-            level=Alert.Level.DANGER,
-            message=f"Planificar fertirrigación: N proyectado a {final['nitrogen_ppm']} ppm.",
+        created.append(
+            Alert.objects.create(
+                parcel=run.parcel,
+                level=Alert.Level.DANGER,
+                message=f"Planificar fertirrigación: N proyectado a {final['nitrogen_ppm']} ppm.",
+            )
         )
+    # Notificar por los canales configurados (WhatsApp, etc.). Nunca rompe la tarea.
+    from apps.notifications.services import send_alert
+
+    for alert in created:
+        try:
+            send_alert(alert)
+        except Exception:  # noqa: BLE001
+            pass
