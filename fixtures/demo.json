@@ -1,0 +1,151 @@
+[
+  {
+    "model": "soils.parcel",
+    "pk": 1,
+    "fields": {
+      "name": "Parcela 4 · Lote norte",
+      "latitude": -31.4201,
+      "longitude": -64.1888,
+      "area_ha": 12.5
+    }
+  },
+  {
+    "model": "soils.soilprofile",
+    "pk": 1,
+    "fields": {
+      "parcel": 1,
+      "soil_type": "franco",
+      "ph": 6.5,
+      "organic_matter_pct": 3.2,
+      "electrical_conductivity": 0.8,
+      "sampled_at": "2026-08-15"
+    }
+  },
+  {
+    "model": "soils.soillayer",
+    "pk": 1,
+    "fields": {
+      "profile": 1,
+      "depth_from_cm": 0,
+      "depth_to_cm": 20,
+      "sand_pct": 40,
+      "silt_pct": 40,
+      "clay_pct": 20,
+      "field_capacity_pct": 28,
+      "wilting_point_pct": 12,
+      "bulk_density": 1.3
+    }
+  },
+  {
+    "model": "soils.soillayer",
+    "pk": 2,
+    "fields": {
+      "profile": 1,
+      "depth_from_cm": 20,
+      "depth_to_cm": 50,
+      "sand_pct": 35,
+      "silt_pct": 35,
+      "clay_pct": 30,
+      "field_capacity_pct": 30,
+      "wilting_point_pct": 14,
+      "bulk_density": 1.4
+    }
+  },
+  {
+    "model": "crops.plant",
+    "pk": 1,
+    "fields": {
+      "name": "Tomate",
+      "species": "Solanum lycopersicum",
+      "kind": "hortaliza",
+      "cycle_days": 120,
+      "kc_initial": 0.6,
+      "kc_mid": 1.15,
+      "kc_end": 0.8,
+      "root_depth_cm": 50,
+      "growth_rate": 0.045
+    }
+  },
+  {
+    "model": "crops.cropstage",
+    "pk": 1,
+    "fields": {
+      "plant": 1,
+      "name": "Establecimiento",
+      "order": 1,
+      "day_start": 0,
+      "day_end": 25,
+      "water_demand_mm_day": 2.0,
+      "nitrogen_ppm": 15,
+      "phosphorus_ppm": 10,
+      "potassium_ppm": 20
+    }
+  },
+  {
+    "model": "crops.cropstage",
+    "pk": 2,
+    "fields": {
+      "plant": 1,
+      "name": "Crecimiento vegetativo",
+      "order": 2,
+      "day_start": 26,
+      "day_end": 70,
+      "water_demand_mm_day": 4.5,
+      "nitrogen_ppm": 45,
+      "phosphorus_ppm": 15,
+      "potassium_ppm": 55
+    }
+  },
+  {
+    "model": "crops.cropstage",
+    "pk": 3,
+    "fields": {
+      "plant": 1,
+      "name": "Floración y fructificación",
+      "order": 3,
+      "day_start": 71,
+      "day_end": 120,
+      "water_demand_mm_day": 5.0,
+      "nitrogen_ppm": 30,
+      "phosphorus_ppm": 20,
+      "potassium_ppm": 60
+    }
+  },
+  {
+    "model": "crops.plant",
+    "pk": 2,
+    "fields": {
+      "name": "Naranjo",
+      "species": "Citrus × sinensis",
+      "kind": "frutal",
+      "cycle_days": 365,
+      "kc_initial": 0.65,
+      "kc_mid": 0.95,
+      "kc_end": 0.75,
+      "root_depth_cm": 90,
+      "growth_rate": 0.012
+    }
+  },
+  {
+    "model": "monitoring.sensor",
+    "pk": 1,
+    "fields": {
+      "parcel": 1,
+      "code": "S1-15CM",
+      "sensor_type": "capacitivo",
+      "depth_cm": 15,
+      "protocol": "lora"
+    }
+  },
+  {
+    "model": "monitoring.sensor",
+    "pk": 2,
+    "fields": {
+      "parcel": 1,
+      "code": "S2-30CM",
+      "sensor_type": "capacitivo",
+      "depth_cm": 30,
+      "protocol": "lora"
+    }
+  }
+]

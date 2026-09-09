@@ -16,3 +16,7 @@ node_modules/
 
 # Entornos y secretos
 .env
+
+# Django
+db.sqlite3
+media/
