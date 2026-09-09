@@ -1,0 +1,46 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Deploy to Droplet via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            set -e
+            APP_DIR="/opt/forestia"
+            if [ ! -d "$APP_DIR/.git" ]; then
+              sudo mkdir -p "$APP_DIR"
+              sudo git clone https://github.com/${{ github.repository }}.git "$APP_DIR"
+              sudo chown -R ${{ secrets.DO_USER }}: "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+            git fetch origin
+            git reset --hard origin/main
+            # Asegurar que existe el .env de producción
+            if [ ! -f ".env" ]; then
+              cp .env.example .env
+              # Ajustes mínimos de producción (modificar a mano la primera vez)
+              sed -i 's/^DEBUG=.*/DEBUG=false/' .env
+              sed -i 's/^DB_HOST=.*/DB_HOST=db/' .env
+              sed -i 's/^DB_NAME=.*/DB_NAME=forestia/' .env
+              sed -i 's/^CELERY_BROKER_URL=.*/CELERY_BROKER_URL=redis:\/\/redis:6379\/0/' .env
+              sed -i 's/^CELERY_RESULT_BACKEND=.*/CELERY_RESULT_BACKEND=redis:\/\/redis:6379\/1/' .env
+            fi
+            docker compose pull
+            docker compose up -d --build
+            docker compose exec -T web python manage.py migrate --noinput
+            docker compose exec -T web python manage.py collectstatic --noinput
+            docker system prune -f

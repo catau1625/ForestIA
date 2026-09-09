@@ -30,6 +30,71 @@ fixtures/demo.json datos de ejemplo
 docker-compose.yml despliegue de producción
 ```
 
+## Despliegue en DigitalOcean (Droplet)
+
+### 1. Crear el Droplet
+- Imagen: **Ubuntu 24.04 (LTS)**
+- Plan: al menos **2 GB RAM / 1 vCPU** (Basic)
+- Autenticación: **clave SSH** (subir tu clave pública en DigitalOcean)
+- Firewall: abrir puertos **22 (SSH)** y **8000 (HTTP)**
+
+### 2. Bootstrap inicial (una sola vez)
+Conectate como `root` y ejecutar el script de preparación:
+
+```bash
+ssh root@<IP_DEL_DROPLET>
+# Dentro del Droplet:
+bash <(curl -s https://raw.githubusercontent.com/catau1625/ForestIA/main/scripts/setup-droplet.sh)
+```
+
+Esto instala Docker, clona el repo, crea el `.env` de producción y levanta los contenedores.
+
+### 3. Configurar GitHub Actions para deploy automático
+En tu repo, ir a **Settings → Secrets and variables → Actions → New repository secret** y agregar:
+
+| Secreto      | Qué contiene                              |
+|--------------|-------------------------------------------|
+| `DO_HOST`    | IP pública del Droplet                    |
+| `DO_USER`    | Usuario SSH (ej. `root` o el que creaste) |
+| `DO_SSH_KEY` | **Clave SSH privada** completa (PEM)      |
+
+> **No compartas estas claves con nadie.** El workflow solo las lee desde los secretos de GitHub.
+
+A partir de ahí, cada `git push` a `main` desplegará automáticamente en el Droplet.
+
+### 4. Primeros ajustes manuales en el Droplet
+```bash
+ssh <USUARIO>@<IP_DEL_DROPLET>
+cd /opt/forestia
+sudo nano .env
+# Cambiar al menos:
+#   SECRET_KEY=<una clave larga y aleatoria>
+#   ALLOWED_HOSTS=<IP pública o dominio>
+#   DB_PASSWORD=<contraseña segura>
+docker compose up -d --build
+```
+
+### 5. Dominio + HTTPS (recomendado)
+Usar **Nginx** como reverse proxy con Let's Encrypt (Certbot) o el balanceador de aplicaciones de DigitalOcean.
+
+### Diagrama de servicios en el Droplet
+```
+┌─────────────────────────────────────┐
+│  Droplet Ubuntu + Docker            │
+│  ┌─────────┐ ┌─────────┐           │
+│  │  web    │ │ worker  │           │
+│  │ gunicorn│ │ Celery  │           │
+│  └────┬────┘ └─────────┘           │
+│  ┌────┴────┐ ┌─────────┐           │
+│  │   db    │ │  beat   │           │
+│  │PostGIS  │ │ Celery  │           │
+│  └─────────┘ └─────────┘           │
+│  ┌─────────┐                       │
+│  │  redis  │                       │
+│  └─────────┘                       │
+└─────────────────────────────────────┘
+```
+
 ## Arranque rápido (local)
 
 ```bash
