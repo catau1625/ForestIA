@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForestIA · Simulación #{{ run.pk }} · {{ run.plant }}</title>
+<style>
+:root{--ink:#1a1a1a;--mut:#666;--line:#ddd;--blue:#2f6fdd;--green:#3a9e5c;--purple:#8a5cc9;--soil1:#8a6b4d;--soil2:#a3855f;--soil3:#c2a87e;--water:#7ab5e6}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fafafa}
+main{max-width:960px;margin:0 auto;padding:24px 16px}
+h1{font-size:20px;font-weight:600}
+.sub{color:var(--mut);font-size:13px;margin-top:4px}
+.scene-wrap{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:16px;overflow:hidden}
+.controls{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer}
+.btn.sec{background:#fff;color:var(--ink)}
+input[type=range]{flex:1;min-width:180px;accent-color:var(--ink)}
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.ro{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.ro .v{font-size:20px;font-variant-numeric:tabular-nums;font-weight:600}
+.ro .l{font-size:11px;color:var(--mut)}
+svg{display:block;width:100%;height:auto}
+.chart-wrap{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:16px;padding:12px 16px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mut);margin-top:8px}
+.lg{display:flex;align-items:center;gap:6px}
+.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.daybadge{font-size:13px;color:var(--mut);min-width:110px}
+@media(max-width:640px){.readouts{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main>
+  <h1>ForestIA · Simulación de {{ run.plant }} — {{ run.parcel }}</h1>
+  <div class="sub">Suelo {{ run.soil_profile.get_soil_type_display|default:"—" }} · horizonte {{ run.horizon_days }} días · {{ run.get_status_display }} · animación referencial de crecimiento y capas</div>
+
+  <div class="scene-wrap">
+    <div class="controls">
+      <button class="btn" id="play">Reproducir</button>
+      <input type="range" id="seek" min="0" max="1" step="0.001" value="0">
+      <span class="daybadge" id="dayBadge">día 0</span>
+    </div>
+    <svg id="scene" viewBox="0 0 960 460"></svg>
+    <div class="readouts">
+      <div class="ro"><div class="v" id="rB">0 %</div><div class="l">biomasa</div></div>
+      <div class="ro"><div class="v" id="rH">{{ run.initial_moisture_pct }} %</div><div class="l">humedad suelo</div></div>
+      <div class="ro"><div class="v" id="rN">{{ run.initial_nitrogen_ppm }} ppm</div><div class="l">nitrógeno</div></div>
+      <div class="ro"><div class="v" id="rPh">—</div><div class="l">etapa fenológica</div></div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <svg id="chart" viewBox="0 0 920 240"></svg>
+    <div class="legend">
+      <span class="lg"><i style="background:var(--blue)"></i>biomasa</span>
+      <span class="lg"><i style="background:var(--green)"></i>humedad del suelo</span>
+      <span class="lg"><i style="background:var(--purple)"></i>nitrógeno</span>
+    </div>
+  </div>
+</main>
+
+{{ run.result|json_script:"sim-data" }}
+<script>
+const runData = JSON.parse(document.getElementById("sim-data").textContent);
+const stages = {{ stages_json|safe }};
+const plantKind = "{{ run.plant.kind }}";
+const days = runData.days, biomass = runData.biomass, hum = runData.moisture_pct, nit = runData.nitrogen_ppm;
+const T = days[days.length-1];
+const iAt = t => { // índice interpolado
+  const f = Math.max(0, Math.min(T, t));
+  let i = Math.floor(f);
+  if (i >= days.length-1) return {i: days.length-1, fr: 0};
+  return {i, fr: f - days[i]};
+};
+const val = (arr, t) => { const {i, fr} = iAt(t); return arr[i] + ((arr[i+1] ?? arr[i]) - arr[i]) * fr; };
+const stageAt = t => { let s = stages[0]?.name || "—"; for (const st of stages) if (t >= st.day_start) s = st.name; return s; };
+
+/* ---------- escena: planta + suelo ---------- */
+const NS = "http://www.w3.org/2000/svg";
+const scene = document.getElementById("scene");
+const GROUND = 320;           // línea de suelo en el SVG
+const MAXH = 250;             // altura máxima de planta
+function mk(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+
+// cielo y suelo (capas fijas)
+mk("rect", {x:0, y:0, width:960, height:GROUND, fill:"#eaf3fb"}, scene);
+mk("circle", {cx:870, cy:60, r:34, fill:"#ffd964"}, scene);
+const layers = [
+  {y:GROUND,      h:55, c:"var(--soil1)", label:"0–20 cm"},
+  {y:GROUND+55,   h:75, c:"var(--soil2)", label:"20–50 cm"},
+  {y:GROUND+130,  h:80, c:"var(--soil3)", label:"50–90 cm"},
+];
+layers.forEach(L=>{
+  mk("rect", {x:0, y:L.y, width:960, height:L.h, fill:L.c}, scene);
+  mk("text", {x:12, y:L.y+18, "font-size":12, fill:"rgba(255,255,255,.85)"}, scene).textContent = L.label;
+});
+mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#5d4a33", "stroke-width":2}, scene);
+// agua: llena animada según humedad
+const water = mk("rect", {x:0, y:GROUND, width:960, height:0, fill:"var(--water)", opacity:.55}, scene);
+const wline = mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#3f7fb5", "stroke-width":1.5, "stroke-dasharray":"6 4"}, scene);
+
+// planta (grupo que crece)
+const plant = mk("g", {}, scene);
+const stem = mk("path", {fill:"none", stroke:"#2f6b34", "stroke-linecap":"round"}, plant);
+const canopy = mk("circle", {fill:"#4c9e54", opacity:.9}, plant);
+const leaves = [];
+for (let i=0;i<6;i++) leaves.push(mk("ellipse", {fill:"#57a95e"}, plant));
+const fruit = mk("circle", {fill:"#e8863a", opacity:0}, plant);
+
+function drawPlant(b){ // b: biomasa 0..1
+  const h = 18 + b*MAXH*(plantKind==="frutal"?1:0.8);
+  const x = 250, base = GROUND;
+  stem.setAttribute("d", `M ${x} ${base} C ${x-10} ${base-h*0.4}, ${x+12} ${base-h*0.7}, ${x} ${base-h}`);
+  stem.setAttribute("stroke-width", 2.5 + 5*b);
+  if (plantKind === "frutal"){
+    canopy.setAttribute("cx", x); canopy.setAttribute("cy", base-h-18*b);
+    canopy.setAttribute("r", 8 + 52*b);
+    leaves.forEach(e=>e.setAttribute("opacity", 0));
+    fruit.setAttribute("cx", x); fruit.setAttribute("cy", base-h-18*b);
+    fruit.setAttribute("r", 4+16*b); fruit.setAttribute("opacity", b>0.6?0.95:0);
+  } else {
+    canopy.setAttribute("opacity", 0); fruit.setAttribute("opacity", 0);
+    leaves.forEach((e,i)=>{
+      const f = (i+1)/7;
+      e.setAttribute("cx", x + (i%2? 1:-1)*(10+26*b)*Math.sin(i*2.1));
+      e.setAttribute("cy", base - h*f);
+      e.setAttribute("rx", 4+22*b*(1-f*0.4)); e.setAttribute("ry", 2.5+9*b);
+      e.setAttribute("opacity", Math.min(1, b*2));
+      e.setAttribute("transform", `rotate(${(i%2?38:-38)} ${e.getAttribute("cx")} ${e.getAttribute("cy")})`);
+    });
+  }
+}
+
+/* ---------- gráfico con cursor ---------- */
+const chart = document.getElementById("chart");
+const CW=920, CH=240, padL=36, padB=24, padT=10, padR=12;
+const X = t => padL + (CW-padL-padR)*t/T;
+const Y = v => padB + (CH-padB-padT)*(1 - v/100);
+[0,25,50,75,100].forEach(v=>{
+  mk("line",{x1:padL,y1:Y(v),x2:CW-padR,y2:Y(v),stroke:"#eee","stroke-width":1},chart);
+  mk("text",{x:padL-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:"#999"},chart).textContent=v;
+});
+for(let m=0;m<=Math.ceil(T/30);m++) mk("text",{x:X(m*30),y:CH-6,"text-anchor":"middle","font-size":10,fill:"#999"},chart).textContent=m+" m";
+const line=(arr,c,scale=100)=>mk("polyline",{fill:"none",stroke:c,"stroke-width":2,points:days.map((d,i)=>X(d).toFixed(1)+","+Y(arr[i]*100/scale).toFixed(1)).join(" ")},chart);
+line(biomass,"var(--blue)",1);     // biomasa 0–1 → 0–100 %
+line(hum,"var(--green)",60);      // humedad 0–60 %
+line(nit,"var(--purple)",100);    // nitrógeno 0–100 ppm
+const cursor = mk("line",{y1:padT,y2:CH-padB,stroke:"#1a1a1a","stroke-width":1,opacity:.5},chart);
+
+/* ---------- controles / animación ---------- */
+let cur = 0, playing = false, last = null;
+const seek = document.getElementById("seek"), badge = document.getElementById("dayBadge"), playBtn = document.getElementById("play");
+function render(t){
+  cur = t;
+  const b = val(biomass,t), h = val(hum,t), nn = val(nit,t);
+  drawPlant(b);
+  // banda de agua: profundidad simulada 0–190 px (capas 0–50 cm aprox.)
+  const hh = Math.max(0, Math.min(1, h/60)) * 190;
+  water.setAttribute("y", GROUND + 190 - hh);
+  water.setAttribute("height", hh);
+  wline.setAttribute("y1", GROUND + 190 - hh);
+  wline.setAttribute("y2", GROUND + 190 - hh);
+  cursor.setAttribute("x1", X(t)); cursor.setAttribute("x2", X(t));
+  seek.value = t/T;
+  badge.textContent = "día " + Math.round(t);
+  document.getElementById("rB").textContent = (b*100).toFixed(0)+" %";
+  document.getElementById("rH").textContent = h.toFixed(0)+" %";
+  document.getElementById("rN").textContent = nn.toFixed(0)+" ppm";
+  document.getElementById("rPh").textContent = stageAt(t);
+}
+function loop(ts){
+  if(!playing) return;
+  if(last==null) last = ts;
+  render(cur + (ts-last)/1000 * (T/30)); // recorre el horizonte en ~30 s
+  last = ts;
+  if(cur >= T){ playing=false; playBtn.textContent="Reproducir"; last=null; return; }
+  requestAnimationFrame(loop);
+}
+playBtn.onclick = ()=>{
+  playing = !playing; last = null;
+  playBtn.textContent = playing ? "Pausar" : "Reproducir";
+  if(playing){ if(cur>=T) render(0); requestAnimationFrame(loop); }
+};
+seek.oninput = e => render(+e.target.value * T);
+// enlace profundo: ?day=60 arranca en ese día
+const startDay = parseFloat(new URLSearchParams(location.search).get("day"));
+render(Number.isFinite(startDay) ? Math.max(0, Math.min(T, startDay)) : 0);
+</script>
+</body>
+</html>

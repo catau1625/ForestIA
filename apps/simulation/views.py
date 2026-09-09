@@ -1,3 +1,6 @@
+import json
+
+from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
 
 from .models import SimulationRun
@@ -15,3 +18,16 @@ class SimulationRunViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         run = serializer.save()
         run_simulation_task.delay(run.id)
+
+
+def run_preview(request, pk: int):
+    """Vista animada de la simulación: planta a escala y capas de suelo dinámicas."""
+    run = get_object_or_404(
+        SimulationRun.objects.select_related("parcel", "plant", "soil_profile"), pk=pk
+    )
+    stages = list(run.plant.stages.values("name", "day_start", "day_end"))
+    return render(
+        request,
+        "simulation/preview.html",
+        {"run": run, "stages_json": json.dumps(stages)},
+    )

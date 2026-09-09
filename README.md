@@ -53,8 +53,12 @@ API REST: http://127.0.0.1:8000/api/v1/
 2. Cargar la planta y sus etapas con demanda de nutrientes (apps.crops).
 3. `python manage.py sync_weather` baja el pronóstico agro (ET0, lluvia, radiación) de Open-Meteo para las parcelas georreferenciadas.
 4. POST a `/api/v1/simulation/runs/` con parcel, plant, horizonte y condiciones iniciales.
-5. Celery ejecuta el modelo (`apps/simulation/engine.py`) y guarda la serie en `result`.
+5. Celery ejecuta el modelo (`apps/simulation/engine.py`) con el pronóstico real (ET0 y lluvia de Open-Meteo) y guarda la serie en `result`.
 6. El modelo genera alertas automáticas de riego y fertirrigación (apps.alerts).
+7. La vista animada `/api/v1/simulation/runs/<id>/preview/` muestra la planta creciendo a tamaño referencial y las capas de suelo modificándose en el tiempo (botón Reproducir o parámetro `?day=80`).
+
+![Vista animada día 0](docs/vista_dia0.png)
+![Vista animada día 80](docs/vista_dia80.png)
 
 ## Variables de entorno (opcional)
 
