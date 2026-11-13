@@ -74,25 +74,37 @@ sudo nano .env
 docker compose up -d --build
 ```
 
-### 5. Dominio + HTTPS (recomendado)
-Usar **Nginx** como reverse proxy con Let's Encrypt (Certbot) o el balanceador de aplicaciones de DigitalOcean.
+### 5. Dominio + HTTPS
+1. Crear un registro **A** en el DNS del dominio apuntando a la IP del Droplet.
+2. En el Droplet, ejecutar el script de HTTPS (configura Nginx + Certbot):
+```bash
+export DOMAIN=tufinca.com
+bash <(curl -s https://raw.githubusercontent.com/catau1625/ForestIA/main/scripts/setup-https.sh)
+```
+Esto levanta un proxy reverso con certificado SSL gratuito de Let's Encrypt (con renovación automática).
+
+> **Recomendación de seguridad**: una vez activo el HTTPS, acotar el servicio web a localhost editando `docker-compose.yml` → `ports: ["127.0.0.1:8000:8000"]` y abriendo solo los puertos 80/443/22 en el firewall.
 
 ### Diagrama de servicios en el Droplet
 ```
-┌─────────────────────────────────────┐
-│  Droplet Ubuntu + Docker            │
-│  ┌─────────┐ ┌─────────┐           │
-│  │  web    │ │ worker  │           │
-│  │ gunicorn│ │ Celery  │           │
-│  └────┬────┘ └─────────┘           │
-│  ┌────┴────┐ ┌─────────┐           │
-│  │   db    │ │  beat   │           │
-│  │PostGIS  │ │ Celery  │           │
-│  └─────────┘ └─────────┘           │
-│  ┌─────────┐                       │
-│  │  redis  │                       │
-│  └─────────┘                       │
-└─────────────────────────────────────┘
+                         ┌──────────────────────────────────────┐
+   https://tufinca.com → │  Nginx (SSL/Let's Encrypt) :443/:80  │
+                         └──────────────┬───────────────────────┘
+                                        │ proxy_pass
+                         ┌──────────────┴───────────────────────┐
+                         │  Droplet Ubuntu + Docker             │
+                         │  ┌─────────┐ ┌─────────┐            │
+                         │  │  web    │ │ worker  │            │
+                         │  │ :8000   │ │ Celery  │            │
+                         │  └────┬────┘ └─────────┘            │
+                         │  ┌────┴────┐ ┌─────────┐            │
+                         │  │   db    │ │  beat   │            │
+                         │  │PostGIS  │ │ Celery  │            │
+                         │  └─────────┘ └─────────┘            │
+                         │  ┌─────────┐                        │
+                         │  │  redis  │                        │
+                         │  └─────────┘                        │
+                         └──────────────────────────────────────┘
 ```
 
 ## Arranque rápido (local)

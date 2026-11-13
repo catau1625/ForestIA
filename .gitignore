@@ -21,3 +21,4 @@ node_modules/
 # Django
 db.sqlite3
 media/
+db 2.sqlite3
