@@ -10,6 +10,13 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-cambiar-en-produccion
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
 
+# La plataforma se embebe en un iframe desde la página del proyecto
+# (ej. katanacreacionesweb.cl). CSP frame-ancestors se refuerza en Nginx.
+X_FRAME_OPTIONS = config("X_FRAME_OPTIONS", default="ALLOWALL")
+FRAME_ANCESTORS = config(
+    "FRAME_ANCESTORS", default="https://katanacreacionesweb.cl https://www.katanacreacionesweb.cl"
+)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
