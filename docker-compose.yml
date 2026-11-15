@@ -38,6 +38,9 @@ services:
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
     ports:
       - "127.0.0.1:8000:8000"
+    volumes:
+      # staticfiles se escribe en el host para que Nginx los sirva directo
+      - ./staticfiles:/app/staticfiles
     depends_on:
       db:
         condition: service_healthy
