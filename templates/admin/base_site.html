@@ -1,0 +1,116 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}ForestIA — {{ title }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* Tema ForestIA para Django Admin — paleta del panel principal */
+:root {
+    --primary: #3a9e5c;
+    --secondary: #2e7d4f;
+    --accent: #2f6fdd;
+    --primary-fg: #ffffff;
+
+    --body-fg: #1a1a1a;
+    --body-bg: #f7f7f5;
+    --body-quiet-color: #666666;
+    --body-loud-color: #1a1a1a;
+
+    --header-color: #ffffff;
+    --header-branding-color: #ffffff;
+    --header-bg: #1a1a1a;
+    --header-link-color: #d8e8dd;
+
+    --breadcrumbs-fg: #555555;
+    --breadcrumbs-link-fg: #2e7d4f;
+    --breadcrumbs-bg: #ffffff;
+
+    --link-fg: #2f6fdd;
+    --link-hover-color: #1f4e9c;
+    --link-selected-fg: #2e7d4f;
+
+    --hairline-color: #e2e2e2;
+    --border-color: #e2e2e2;
+
+    --error-fg: #c0392b;
+    --message-success-bg: #e9f7ee;
+    --message-warning-bg: #fdf3e3;
+    --message-error-bg: #fbe9e7;
+
+    --darkened-bg: #efefec;
+    --selected-bg: #d9ecdf;
+    --selected-row: #eaf4ee;
+
+    --button-fg: #ffffff;
+    --button-bg: #1a1a1a;
+    --button-hover-bg: #333333;
+    --default-button-bg: #3a9e5c;
+    --default-button-hover-bg: #2e7d4f;
+    --close-button-bg: #e2e2e2;
+    --close-button-hover-bg: #d0d0cc;
+
+    --delete-button-bg: #c0392b;
+    --delete-button-hover-bg: #8e2418;
+
+    --object-tools-fg: #ffffff;
+    --object-tools-bg: #2f6fdd;
+    --object-tools-hover-bg: #1f4e9c;
+}
+
+html, body { background: #f7f7f5; }
+
+#header { background: #1a1a1a; color: #ffffff; }
+#branding h1 { font-weight: 700; letter-spacing: -.01em; }
+#branding h1 span { color: #7ed09a; }
+
+.module h2, .module caption, .inline-group h2 {
+    background: #eef3fd;
+    color: #1f4e9c;
+}
+.module, .inline-group {
+    border: 1px solid #e2e2e2;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+}
+#changelist .results thead th { background: #f7f7f5; }
+
+input, textarea, select, .form-row .vTextField {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    border: 1px solid #e2e2e2 !important;
+    border-radius: 8px;
+}
+input:focus, textarea:focus, select:focus {
+    border-color: #3a9e5c !important;
+    box-shadow: 0 0 0 3px rgba(58, 158, 92, .18) !important;
+    outline: none;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #1a1a1a;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.button:hover, input[type=submit]:hover, input[type=button]:hover, a.button:hover {
+    background: #333333;
+}
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #3a9e5c;
+    border: none;
+}
+.button.default:hover, input[type=submit].default:hover {
+    background: #2e7d4f;
+}
+
+.selector select { background: #ffffff; color: #1a1a1a; }
+div.breadcrumbs { border-radius: 0; }
+.login #container { border: 1px solid #e2e2e2; border-radius: 14px; background: #ffffff; }
+.login #container .form-row label { color: #1a1a1a; }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">Forest<span style="color:#7ed09a">IA</span></h1>
+{% endblock %}
