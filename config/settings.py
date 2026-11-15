@@ -17,6 +17,14 @@ FRAME_ANCESTORS = config(
     "FRAME_ANCESTORS", default="https://katanacreacionesweb.cl https://www.katanacreacionesweb.cl"
 )
 
+# Nginx termina el HTTPS y reenvía a Gunicorn por HTTP: sin esto, Django no
+# reconoce las peticiones como seguras y la verificación CSRF del admin falla (403).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="https://forestia.katanacreacionesweb.cl",
+).split(",")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
