@@ -9,6 +9,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from apps.alerts.models import Alert
+from apps.crops.models import Plant
+from apps.monitoring.models import DroneFlight, Sensor, SensorReading
+from apps.simulation.models import SimulationRun
+from apps.soils.models import Parcel, SoilProfile
+from apps.weather.models import WeatherRecord
+
 from .models import Activity, Event, Folder, SharedFile, Task, TaskList
 
 User = get_user_model()
@@ -20,11 +27,62 @@ def _log(request, action, target, url=""):
 
 @staff_member_required
 def home(request):
+    """Hub de la intranet: dos secciones en bloques — Plataforma y Proyecto."""
+    today = timezone.localdate()
+    now = timezone.now()
+
+    last_reading = SensorReading.objects.select_related("sensor").order_by("-timestamp").first()
+    last_weather = WeatherRecord.objects.select_related("parcel").order_by("-timestamp").first()
+    last_flight = DroneFlight.objects.select_related("parcel").order_by("-flown_at").first()
+    open_danger = Alert.objects.filter(acknowledged=False, level=Alert.Level.DANGER).count()
+    open_warn = Alert.objects.filter(acknowledged=False, level=Alert.Level.WARNING).count()
+    open_info = Alert.objects.filter(acknowledged=False, level=Alert.Level.INFO).count()
+
+    task_lists = TaskList.objects.prefetch_related("tasks")
+    my_tasks = Task.objects.filter(assignee=request.user).select_related("task_list")
+    upcoming = Event.objects.filter(start__gte=now).select_related("created_by")[:3]
+    recent_files = SharedFile.objects.select_related("uploaded_by").order_by("-id")[:3]
+
+    platform = {
+        "parcels": Parcel.objects.count(),
+        "profiles": SoilProfile.objects.count(),
+        "sensors_active": Sensor.objects.filter(is_active=True).count(),
+        "sensors_total": Sensor.objects.count(),
+        "last_reading": last_reading,
+        "weather_parcels": WeatherRecord.objects.order_by("parcel").values("parcel").distinct().count(),
+        "last_weather": last_weather,
+        "flights": DroneFlight.objects.count(),
+        "last_flight": last_flight,
+        "plants": Plant.objects.count(),
+        "simulations": SimulationRun.objects.count(),
+        "open_alerts": open_danger + open_warn + open_info,
+        "open_danger": open_danger,
+        "open_warn": open_warn,
+    }
+    project = {
+        "task_lists": task_lists,
+        "tasks_total": Task.objects.count(),
+        "my_tasks": my_tasks,
+        "my_tasks_count": my_tasks.count(),
+        "upcoming": upcoming,
+        "files_total": SharedFile.objects.count(),
+        "folders_total": Folder.objects.count(),
+        "recent_files": recent_files,
+    }
+    return render(
+        request,
+        "team/home.html",
+        {"platform": platform, "project": project, "today": today},
+    )
+
+
+@staff_member_required
+def calendar(request):
     today = timezone.localdate()
     upcoming = Event.objects.filter(start__gte=timezone.now()).select_related("created_by")[:10]
     return render(
         request,
-        "team/home.html",
+        "team/calendar.html",
         {"upcoming": upcoming, "today": today},
     )
 
@@ -45,17 +103,17 @@ def event_create(request):
             ev = Event.objects.create(
                 title=title, start=start, all_day=not bool(time_), created_by=request.user
             )
-            _log(request, Activity.ADD, f"el evento «{ev.title}»", reverse("team-home"))
-    return redirect("team-home")
+            _log(request, Activity.ADD, f"el evento «{ev.title}»", reverse("team-calendar"))
+    return redirect("team-calendar")
 
 
 @staff_member_required
 @require_POST
 def event_delete(request, pk):
     ev = get_object_or_404(Event, pk=pk)
-    _log(request, Activity.DELETE, f"el evento «{ev.title}»", reverse("team-home"))
+    _log(request, Activity.DELETE, f"el evento «{ev.title}»", reverse("team-calendar"))
     ev.delete()
-    nxt = request.POST.get("next") or reverse("team-home")
+    nxt = request.POST.get("next") or reverse("team-calendar")
     return redirect(nxt)
 
 

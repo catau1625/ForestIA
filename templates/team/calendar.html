@@ -1,0 +1,78 @@
+{% extends "team/base.html" %}
+{% block title %}Calendario · Equipo ForestIA{% endblock %}
+{% block nav_cal %}activo{% endblock %}
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/es.global.min.js"></script>
+<style>
+.cal-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.fc .fc-daygrid-day-number,.fc .fc-col-header-cell-cushion{color:var(--deep);text-decoration:none}
+.fc .fc-day-today{background:var(--pale) !important}
+.fc-event{background:var(--ok);border-color:var(--ok);cursor:pointer}
+.upcoming-list{display:flex;flex-direction:column;gap:8px}
+.up-item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;background:#fdfef9}
+.up-item .d{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap}
+</style>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Calendario del proyecto</h1>
+  <p class="muted">Un solo calendario para todo el equipo. Haz clic en un día para agregar, o en un evento para verlo.</p>
+</div>
+<div class="card">
+  <form method="post" action="{% url 'team-event-create' %}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    {% csrf_token %}
+    <input type="text" name="title" placeholder="Nuevo evento (ej. reunión de avance)" required style="flex:2;min-width:220px">
+    <input type="date" name="day" required value="{{ today|date:'Y-m-d' }}">
+    <input type="time" name="time" title="Vacío = todo el día">
+    <button class="btn" type="submit">Agregar al calendario</button>
+  </form>
+</div>
+<div class="cal-wrap"><div id="calendar"></div></div>
+<div class="card" style="margin-top:16px">
+  <h2>Próximos eventos</h2>
+  <div class="upcoming-list">
+    {% for ev in upcoming %}
+    <div class="up-item">
+      <span class="d">{{ ev.start|date:"d/m/Y H:i" }}</span>
+      <span style="flex:1">{{ ev.title }}</span>
+      <span class="muted">{{ ev.created_by.username }}</span>
+      <form class="inline" method="post" action="{% url 'team-event-delete' ev.pk %}" onsubmit="return confirm('¿Eliminar «{{ ev.title }}» del calendario?')">
+        {% csrf_token %}
+        <button class="btn danger small" type="submit">Eliminar</button>
+      </form>
+    </div>
+    {% empty %}
+    <p class="muted">No hay eventos próximos.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const calendarEl = document.getElementById('calendar');
+const calendar = new FullCalendar.Calendar(calendarEl, {
+  locale: 'es',
+  initialView: 'dayGridMonth',
+  height: 'auto',
+  headerToolbar: {left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek'},
+  events: '{% url 'team-events-json' %}',
+  dateClick: info => {
+    const day = info.dateStr;
+    const form = document.querySelector('form[action="{% url 'team-event-create' %}"]');
+    form.day.value = day;
+    form.title.focus();
+  },
+  eventClick: info => {
+    if (confirm('¿Eliminar el evento «' + info.event.title + '»?')) {
+      fetch('{% url 'team-event-delete' 0 %}'.replace('/0/', '/' + info.event.id + '/'), {
+        method: 'POST',
+        headers: {'X-CSRFToken': '{{ csrf_token }}'},
+      }).then(() => info.event.remove());
+    }
+  }
+});
+calendar.render();
+</script>
+{% endblock %}

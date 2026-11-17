@@ -60,7 +60,8 @@ form.inline{display:inline}
     <div class="top">
       <span class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#6A994E"/><path d="M0-11 L0 11" stroke="#DCE8B4" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></span>
       <nav>
-        <a href="{% url 'team-home' %}" class="{% block nav_cal %}{% endblock %}">Calendario</a>
+        <a href="{% url 'team-home' %}" class="{% block nav_home %}{% endblock %}">Inicio</a>
+        <a href="{% url 'team-calendar' %}" class="{% block nav_cal %}{% endblock %}">Calendario</a>
         <a href="{% url 'team-board' %}" class="{% block nav_tasks %}{% endblock %}">Tareas</a>
         <a href="{% url 'team-files' %}" class="{% block nav_files %}{% endblock %}">Archivos</a>
         <a href="{% url 'team-meet' %}" class="{% block nav_meet %}{% endblock %}">Reuniones</a>
