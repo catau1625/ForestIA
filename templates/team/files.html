@@ -1,0 +1,51 @@
+{% extends "team/base.html" %}
+{% block title %}Archivos · Equipo ForestIA{% endblock %}
+{% block nav_files %}activo{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Nube de archivos</h1>
+  <p class="muted">
+    <a href="{% url 'team-files' %}">📁 raíz</a>
+    {% for c in crumbs %} / <a href="{% url 'team-files-folder' c.pk %}">{{ c.name }}</a>{% endfor %}
+    {% if folder %} / <b>{{ folder.name }}</b>{% endif %}
+  </p>
+</div>
+<div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+  <form class="inline" method="post" action="{% url 'team-folder-create' %}" style="display:flex;gap:6px;align-items:center">
+    {% csrf_token %}
+    <input type="hidden" name="parent" value="{{ folder.pk|default:'' }}">
+    <input type="text" name="name" placeholder="Nueva carpeta…" required>
+    <button class="btn ghost" type="submit">+ Carpeta</button>
+  </form>
+  <form class="inline" method="post" action="{% url 'team-file-upload' %}" enctype="multipart/form-data" style="display:flex;gap:6px;align-items:center;flex:1;min-width:280px">
+    {% csrf_token %}
+    <input type="hidden" name="folder" value="{{ folder.pk|default:'' }}">
+    <input type="file" name="file" multiple required style="flex:1">
+    <button class="btn" type="submit">⬆ Subir</button>
+  </form>
+</div>
+<div class="card">
+  <div class="upcoming-list">
+    {% for f in folders %}
+    <div class="up-item">
+      <span>📁</span>
+      <a href="{% url 'team-files-folder' f.pk %}" style="flex:1;font-weight:600">{{ f.name }}</a>
+      <span class="muted">{{ f.created_by.username }} · {{ f.created_at|date:"d/m/Y" }}</span>
+    </div>
+    {% endfor %}
+    {% for f in files %}
+    <div class="up-item">
+      <span>📄</span>
+      <a href="{% url 'team-file-download' f.pk %}" style="flex:1">{{ f.filename }}</a>
+      <span class="muted">{{ f.size_kb }} KB · {{ f.uploaded_by.username }} · {{ f.created_at|date:"d/m H:i" }}</span>
+      <form class="inline" method="post" action="{% url 'team-file-delete' f.pk %}" onsubmit="return confirm('¿Eliminar «{{ f.filename }}»?')">
+        {% csrf_token %}
+        <button class="btn danger small" type="submit">Eliminar</button>
+      </form>
+    </div>
+    {% empty %}
+    {% if not folders %}<p class="muted">Carpeta vacía. Sube el primer archivo o crea una subcarpeta.</p>{% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

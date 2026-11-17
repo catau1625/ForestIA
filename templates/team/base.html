@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Equipo · ForestIA{% endblock %}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-14 -16 28 32'%3E%3Cpath d='M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z' fill='%236A994E'/%3E%3Cpath d='M0-11 L0 11' stroke='%23DCE8B4' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#22301f;--mut:#5f6f52;--line:#d5dfc0;--bg:#f5f8ee;--card:#fff;
+  --ok:#6a994e;--deep:#386641;--lime:#a7c957;--pale:#dce8b4;--soil:#b08968;
+  --warn:#c07a2b;--danger:#b0413e}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+a{color:var(--deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.shell{display:grid;grid-template-columns:1fr 300px;gap:20px;max-width:1320px;margin:0 auto;padding:16px}
+@media(max-width:960px){.shell{grid-template-columns:1fr}}
+.wm{font-family:"Playfair Display",Georgia,serif;font-weight:600;font-size:24px;color:var(--ok);white-space:nowrap;letter-spacing:.01em}
+.wm .o-slot{position:relative;display:inline-block;color:transparent}
+.wm .o-slot svg{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);height:.78em;width:auto}
+.wm .ia{color:var(--deep)}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 18px;margin-bottom:16px}
+.top nav{display:flex;gap:4px;flex-wrap:wrap}
+.top nav a{padding:6px 12px;border-radius:8px;font-size:14px;color:var(--mut)}
+.top nav a:hover{background:var(--pale);text-decoration:none;color:var(--deep)}
+.top nav a.activo{background:var(--deep);color:#fff}
+.top .who{margin-left:auto;font-size:13px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+h1{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:600;color:var(--deep);margin-bottom:4px}
+h2{font-family:"Playfair Display",Georgia,serif;font-size:18px;font-weight:600;color:var(--deep);margin-bottom:10px}
+.muted{font-size:13px;color:var(--mut)}
+.btn{display:inline-block;border:1px solid var(--deep);background:var(--deep);color:#fff;border-radius:10px;padding:7px 14px;font-size:13px;cursor:pointer}
+.btn:hover{background:#2d5237;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--deep)}
+.btn.ghost:hover{background:var(--pale)}
+.btn.danger{border-color:var(--danger);background:var(--danger)}
+.btn.small{padding:3px 10px;font-size:12px;border-radius:8px}
+input[type=text],input[type=date],input[type=time],input[type=file],select,textarea{
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ok);box-shadow:0 0 0 3px rgba(106,153,78,.18)}
+form.inline{display:inline}
+/* columna de actividad */
+.feed{display:flex;flex-direction:column;gap:0}
+.feed-item{display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{flex:none;width:8px;height:8px;border-radius:50%;margin-top:5px}
+.feed-dot.add{background:var(--ok)}
+.feed-dot.change{background:var(--warn)}
+.feed-dot.delete{background:var(--danger)}
+.feed-item .when{margin-left:auto;color:var(--mut);font-size:11px;white-space:nowrap}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+  <div>
+    <div class="top">
+      <span class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#6A994E"/><path d="M0-11 L0 11" stroke="#DCE8B4" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></span>
+      <nav>
+        <a href="{% url 'team-home' %}" class="{% block nav_cal %}{% endblock %}">Calendario</a>
+        <a href="{% url 'team-board' %}" class="{% block nav_tasks %}{% endblock %}">Tareas</a>
+        <a href="{% url 'team-files' %}" class="{% block nav_files %}{% endblock %}">Archivos</a>
+        <a href="{% url 'team-meet' %}" class="{% block nav_meet %}{% endblock %}">Reuniones</a>
+        <a href="/">Panel</a>
+        <a href="/admin/">Admin</a>
+      </nav>
+      <span class="who">👤 {{ user.username }} · <a href="{% url 'admin:logout' %}">salir</a></span>
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+  <aside>
+    <div class="card">
+      <h2>Actividad del equipo</h2>
+      <div class="feed" id="feed"><div class="muted">cargando…</div></div>
+    </div>
+  </aside>
+</div>
+<script>
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function refreshFeed(){
+  try{
+    const r = await fetch('{% url 'team-activity-json' %}');
+    const d = await r.json();
+    document.getElementById('feed').innerHTML = d.items.map(i=>
+      '<div class="feed-item"><span class="feed-dot '+i.kind+'"></span>'+
+      '<span><b>'+esc(i.user)+'</b> '+esc(i.action)+' '+esc(i.target)+'</span>'+
+      '<span class="when">'+esc(i.at)+'</span></div>'
+    ).join('') || '<div class="muted">Sin actividad todavía.</div>';
+  }catch(e){/* sin conexión: se reintenta en el próximo ciclo */}
+}
+refreshFeed();
+setInterval(refreshFeed, 30000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

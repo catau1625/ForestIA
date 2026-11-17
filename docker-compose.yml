@@ -41,6 +41,8 @@ services:
     volumes:
       # staticfiles se escribe en el host para que Nginx los sirva directo
       - ./staticfiles:/app/staticfiles
+      # nube de archivos del equipo (persistente)
+      - ./media:/app/media
     depends_on:
       db:
         condition: service_healthy

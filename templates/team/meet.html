@@ -1,0 +1,47 @@
+{% extends "team/base.html" %}
+{% block title %}Reuniones · Equipo ForestIA{% endblock %}
+{% block nav_meet %}activo{% endblock %}
+{% block extra_head %}
+<style>
+#meet{width:100%;height:640px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#1a1a1a}
+.meet-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.meet-bar input{flex:1;min-width:220px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Sala de reuniones</h1>
+  <p class="muted">Videollamadas con pantalla compartida por Jitsi Meet. Escribe el nombre de la sala y entra; el enlace sirve para invitar a quien quieras (incluso fuera del equipo).</p>
+</div>
+<div class="card">
+  <div class="meet-bar">
+    <input type="text" id="roomName" value="ForestIA-equipo" placeholder="nombre de la sala">
+    <button class="btn" id="joinBtn">Unirse a la reunión</button>
+    <a class="btn ghost" id="openTab" target="_blank" rel="noopener">Abrir en pestaña nueva</a>
+  </div>
+  <div id="meet"><p style="color:#fff;padding:20px">Pulsa «Unirse a la reunión» para entrar. Si el navegador pide iniciar sesión en Jitsi, es el sistema anti-abuso gratuito de meet.jit.si: usa una cuenta de Google/GitHub para crear la sala; quien se une después no la vuelve a pedir.</p></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://meet.jit.si/external_api.js"></script>
+<script>
+let api = null;
+const domain = 'meet.jit.si';
+function slug(s){return s.toLowerCase().trim().replace(/[^a-z0-9áéíóúñ]+/gi,'-').replace(/^-+|-+$/g,'') || 'forestia-equipo'}
+function roomUrl(){return 'https://' + domain + '/' + slug(document.getElementById('roomName').value)}
+document.getElementById('openTab').onclick = e => { e.preventDefault(); window.open(roomUrl(), '_blank', 'noopener'); };
+document.getElementById('joinBtn').onclick = () => {
+  document.getElementById('meet').innerHTML = '';
+  if (api) api.dispose();
+  api = new JitsiMeetExternalAPI(domain, {
+    roomName: slug(document.getElementById('roomName').value),
+    parentNode: document.getElementById('meet'),
+    width: '100%',
+    height: 640,
+    lang: 'es',
+    configOverwrite: { startWithAudioMuted: true },
+    interfaceConfigOverwrite: { SHOW_JITSI_WATERMARK: false }
+  });
+};
+</script>
+{% endblock %}

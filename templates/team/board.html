@@ -1,0 +1,123 @@
+{% extends "team/base.html" %}
+{% block title %}Tareas · Equipo ForestIA{% endblock %}
+{% block nav_tasks %}activo{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+.board{display:flex;gap:14px;align-items:flex-start;overflow-x:auto;padding-bottom:12px}
+.tlist{flex:0 0 290px;background:var(--pale);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;max-height:70vh}
+.tlist-head{display:flex;align-items:center;gap:8px;padding:4px 6px 10px}
+.tlist-head h3{font-size:15px;font-weight:600;flex:1}
+.task-cards{display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:40px;flex:1}
+.task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;cursor:grab;box-shadow:0 1px 2px rgba(34,48,31,.08)}
+.task:active{cursor:grabbing}
+.task .t-title{font-weight:600;margin-bottom:4px}
+.task .t-note{font-size:12px;color:var(--mut);margin-bottom:6px;white-space:pre-wrap}
+.task .t-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--mut)}
+.chip{border-radius:999px;padding:2px 8px;font-size:11px}
+.chip.me{background:var(--deep);color:#fff}
+.chip.free{background:#fff;border:1px dashed var(--mut);color:var(--mut)}
+.chip.due{background:#f7eeda;color:#7a5518}
+.chip.late{background:#f6e4e2;color:#7c2a27}
+.t-assign{display:flex;gap:4px;align-items:center;margin-top:8px}
+.t-assign select{flex:1;padding:4px 6px;font-size:12px;border-radius:6px}
+.add-task{margin-top:10px}
+.add-task input[type=text]{width:100%;margin-bottom:6px}
+.add-task details summary{cursor:pointer;font-size:13px;color:var(--mut);margin-bottom:6px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="card" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  <div style="flex:1;min-width:220px">
+    <h1 style="margin-bottom:0">Organizador de tareas</h1>
+    <p class="muted">Arrastra las tarjetas entre listas · sin asignada = la puede tomar cualquiera</p>
+  </div>
+  <form class="inline" method="post" action="{% url 'team-list-create' %}" style="display:flex;gap:6px">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="Nueva lista…" required>
+    <button class="btn ghost" type="submit">+ Lista</button>
+  </form>
+</div>
+
+<div class="board">
+  {% for tl in lists %}
+  <div class="tlist" data-list="{{ tl.id }}">
+    <div class="tlist-head">
+      <h3>{{ tl.name }}</h3>
+      <span class="muted">{{ tl.tasks.all|length }}</span>
+      <form class="inline" method="post" action="{% url 'team-list-delete' tl.pk %}" onsubmit="return confirm('¿Eliminar la lista «{{ tl.name }}» y todas sus tareas?')">
+        {% csrf_token %}
+        <button class="btn danger small" type="submit">✕</button>
+      </form>
+    </div>
+    <div class="task-cards">
+      {% for t in tl.tasks.all %}
+      <div class="task" data-task="{{ t.id }}">
+        <div class="t-title">{{ t.title }}</div>
+        {% if t.note %}<div class="t-note">{{ t.note|linebreaksbr }}</div>{% endif %}
+        <div class="t-meta">
+          {% if t.assignee %}<span class="chip me">👤 {{ t.assignee.username }}</span>
+          {% else %}<span class="chip free">sin asignar</span>{% endif %}
+          {% if t.due %}<span class="chip {% if t.due < today %}late{% endif %} due">📅 {{ t.due|date:"d/m" }}</span>{% endif %}
+        </div>
+        <div style="display:flex;gap:4px;margin-top:8px;align-items:center">
+          <form class="t-assign" method="post" action="{% url 'team-task-assign' t.pk %}" style="flex:1;display:flex">
+            {% csrf_token %}
+            <select name="assignee" onchange="this.form.submit()" style="flex:1">
+              <option value="">👥 cualquiera</option>
+              {% for u in users %}<option value="{{ u.id }}" {% if t.assignee_id == u.id %}selected{% endif %}>{{ u.username }}</option>{% endfor %}
+            </select>
+          </form>
+          <form class="inline" method="post" action="{% url 'team-task-delete' t.pk %}" onsubmit="return confirm('¿Eliminar la tarea «{{ t.title }}»?')">
+            {% csrf_token %}
+            <button class="btn danger small" type="submit" title="Eliminar tarea">🗑</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <form class="add-task" method="post" action="{% url 'team-task-create' %}">
+      {% csrf_token %}
+      <input type="hidden" name="list" value="{{ tl.id }}">
+      <input type="text" name="title" placeholder="Agregar tarjeta…" required>
+      <details>
+        <summary>opciones (nota, asignada, vencimiento)</summary>
+        <textarea name="note" rows="2" placeholder="Nota (opcional)" style="width:100%;margin-bottom:6px"></textarea>
+        <select name="assignee" style="width:100%;margin-bottom:6px">
+          <option value="">👥 sin asignar (cualquiera)</option>
+          {% for u in users %}<option value="{{ u.id }}">{{ u.username }}</option>{% endfor %}
+        </select>
+        <input type="date" name="due" style="width:100%;margin-bottom:6px">
+      </details>
+      <button class="btn" type="submit" style="width:100%">Agregar</button>
+    </form>
+  </div>
+  {% empty %}
+  <div class="card"><p class="muted">Sin listas todavía. Crea la primera arriba.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function getCookie(name){
+  const m = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return m ? decodeURIComponent(m.pop()) : '';
+}
+document.querySelectorAll('.task-cards').forEach(el=>{
+  new Sortable(el, {
+    group: 'tasks',
+    animation: 150,
+    onEnd: evt=>{
+      const taskId = evt.item.dataset.task;
+      const listId = evt.to.closest('.tlist').dataset.list;
+      const order = Array.from(evt.to.children).indexOf(evt.item);
+      fetch('/equipo/tareas/'+taskId+'/mover/', {
+        method:'POST',
+        headers:{'X-CSRFToken':getCookie('csrftoken'),'Content-Type':'application/x-www-form-urlencoded'},
+        body:'list='+listId+'&order='+order
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
