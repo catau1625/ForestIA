@@ -10,10 +10,6 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-cambiar-en-produccion
 DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
 
-# El admin se monta en /admin/ y /equipo/admin/ a propósito (misma interfaz
-# en ambas rutas); reverse() usa la primera. Se silencia el aviso urls.W005.
-SILENCED_SYSTEM_CHECKS = ["urls.W005"]
-
 # La plataforma se embebe en un iframe desde la página del proyecto
 # (ej. katanacreacionesweb.cl). CSP frame-ancestors se refuerza en Nginx.
 X_FRAME_OPTIONS = config("X_FRAME_OPTIONS", default="ALLOWALL")
