@@ -4,6 +4,9 @@
 
 {% block extrastyle %}
 {{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Tema ForestIA para Django Admin — paleta oficial #DCE8B4 #A7C957 #6A994E #386641 #B08968 */
 :root {
@@ -61,8 +64,13 @@
 html, body { background: #f5f8ee; }
 
 #header { background: #386641; color: #ffffff; }
-#branding h1 { font-weight: 600; letter-spacing: .01em; }
-#branding h1 span { color: #a7c957; }
+#branding h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; letter-spacing: .01em; font-size: 22px; }
+#branding h1 a { display: inline-block; }
+#branding h1 a:hover { text-decoration: none; }
+.wm { white-space: nowrap; }
+.wm .o-slot { position: relative; display: inline-block; color: transparent; }
+.wm .o-slot svg { position: absolute; left: 50%; top: 54%; transform: translate(-50%, -50%); height: .78em; width: auto; }
+.wm .ia { color: #a7c957; }
 
 .module h2, .module caption, .inline-group h2 {
     background: #dce8b4;
@@ -112,5 +120,5 @@ div.breadcrumbs { border-radius: 0; }
 {% endblock %}
 
 {% block branding %}
-<h1 id="site-name">Forest<span style="color:#a7c957">IA</span></h1>
+<h1 id="site-name"><a href="/equipo/admin/" class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#A7C957"/><path d="M0-11 L0 11" stroke="#386641" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></a></h1>
 {% endblock %}
