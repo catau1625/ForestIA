@@ -4,21 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ForestIA · Simulación #{{ run.pk }} · {{ run.plant }}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-14 -16 28 32'%3E%3Cpath d='M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z' fill='%236A994E'/%3E%3Cpath d='M0-11 L0 11' stroke='%23DCE8B4' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1a1a1a;--mut:#666;--line:#ddd;--blue:#2f6fdd;--green:#3a9e5c;--purple:#8a5cc9;--soil1:#8a6b4d;--soil2:#a3855f;--soil3:#c2a87e;--water:#7ab5e6}
+/* Paleta ForestIA: #DCE8B4 #A7C957 #6A994E #386641 #B08968 */
+:root{--ink:#22301f;--mut:#5f6f52;--line:#d5dfc0;--deep:#386641;--green:#6a994e;--lime:#a7c957;--pale:#dce8b4;--soil1:#8a6b4d;--soil2:#b08968;--soil3:#d4b598;--water:#7ab5e6}
 *{box-sizing:border-box;margin:0}
-body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fafafa}
+body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#f5f8ee}
 main{max-width:960px;margin:0 auto;padding:24px 16px}
-h1{font-size:20px;font-weight:600}
+.brand{display:flex;align-items:baseline;gap:10px;margin-bottom:2px}
+.wm{font-family:"Playfair Display",Georgia,serif;font-weight:600;font-size:30px;color:var(--green);letter-spacing:.01em;white-space:nowrap}
+.wm .o-slot{position:relative;display:inline-block;color:transparent}
+.wm .o-slot svg{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);height:.78em;width:auto}
+.wm .ia{color:var(--deep)}
+h1{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:600}
 .sub{color:var(--mut);font-size:13px;margin-top:4px}
 .scene-wrap{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:16px;overflow:hidden}
 .controls{display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer}
-.btn.sec{background:#fff;color:var(--ink)}
-input[type=range]{flex:1;min-width:180px;accent-color:var(--ink)}
+.btn{border:1px solid var(--deep);background:var(--deep);color:#fff;border-radius:10px;padding:8px 18px;font-size:14px;cursor:pointer}
+.btn:hover{background:#2d5237}
+.btn.sec{background:#fff;color:var(--deep)}
+input[type=range]{flex:1;min-width:180px;accent-color:var(--deep)}
 .readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
-.ro{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
-.ro .v{font-size:20px;font-variant-numeric:tabular-nums;font-weight:600}
+.ro{border:1px solid var(--line);border-left:3px solid var(--lime);border-radius:8px;padding:8px 12px;background:#fdfef9}
+.ro .v{font-size:20px;font-variant-numeric:tabular-nums;font-weight:600;color:var(--deep)}
 .ro .l{font-size:11px;color:var(--mut)}
 svg{display:block;width:100%;height:auto}
 .chart-wrap{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:16px;padding:12px 16px}
@@ -32,11 +43,14 @@ svg{display:block;width:100%;height:auto}
 <body>
 <main>
   {% if messages %}
-  <div style="background:#e9f7ee;border:1px solid #bfe6cd;color:#1f6b3a;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px">
+  <div style="background:#e9efdc;border:1px solid var(--pale);color:#386641;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:14px">
     {% for message in messages %}{{ message }}{% endfor %}
   </div>
   {% endif %}
-  <h1>ForestIA · Simulación de {{ run.plant }} — {{ run.parcel }}</h1>
+  <div class="brand">
+    <span class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#6A994E"/><path d="M0-11 L0 11" stroke="#DCE8B4" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></span>
+  </div>
+  <h1>Simulación de {{ run.plant }} — {{ run.parcel }}</h1>
   <div class="sub"><a href="/">← volver al panel</a> · suelo {{ run.soil_profile.get_soil_type_display|default:"—" }} · horizonte {{ run.horizon_days }} días · {{ run.get_status_display }} · animación referencial de crecimiento y capas</div>
 
   <div class="scene-wrap">
@@ -57,9 +71,9 @@ svg{display:block;width:100%;height:auto}
   <div class="chart-wrap">
     <svg id="chart" viewBox="0 0 920 240"></svg>
     <div class="legend">
-      <span class="lg"><i style="background:var(--blue)"></i>biomasa</span>
+      <span class="lg"><i style="background:var(--deep)"></i>biomasa</span>
       <span class="lg"><i style="background:var(--green)"></i>humedad del suelo</span>
-      <span class="lg"><i style="background:var(--purple)"></i>nitrógeno</span>
+      <span class="lg"><i style="background:var(--soil2)"></i>nitrógeno</span>
     </div>
   </div>
 </main>
@@ -88,8 +102,8 @@ const MAXH = 250;             // altura máxima de planta
 function mk(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
 
 // cielo y suelo (capas fijas)
-mk("rect", {x:0, y:0, width:960, height:GROUND, fill:"#eaf3fb"}, scene);
-mk("circle", {cx:870, cy:60, r:34, fill:"#ffd964"}, scene);
+mk("rect", {x:0, y:0, width:960, height:GROUND, fill:"#eef3e2"}, scene);
+mk("circle", {cx:870, cy:60, r:34, fill:"#e8c95c"}, scene);
 const layers = [
   {y:GROUND,      h:55, c:"var(--soil1)", label:"0–20 cm"},
   {y:GROUND+55,   h:75, c:"var(--soil2)", label:"20–50 cm"},
@@ -99,18 +113,18 @@ layers.forEach(L=>{
   mk("rect", {x:0, y:L.y, width:960, height:L.h, fill:L.c}, scene);
   mk("text", {x:12, y:L.y+18, "font-size":12, fill:"rgba(255,255,255,.85)"}, scene).textContent = L.label;
 });
-mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#5d4a33", "stroke-width":2}, scene);
+mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#7a5c40", "stroke-width":2}, scene);
 // agua: llena animada según humedad
 const water = mk("rect", {x:0, y:GROUND, width:960, height:0, fill:"var(--water)", opacity:.55}, scene);
-const wline = mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#3f7fb5", "stroke-width":1.5, "stroke-dasharray":"6 4"}, scene);
+const wline = mk("line", {x1:0, y1:GROUND, x2:960, y2:GROUND, stroke:"#5a93c4", "stroke-width":1.5, "stroke-dasharray":"6 4"}, scene);
 
 // planta (grupo que crece)
 const plant = mk("g", {}, scene);
-const stem = mk("path", {fill:"none", stroke:"#2f6b34", "stroke-linecap":"round"}, plant);
-const canopy = mk("circle", {fill:"#4c9e54", opacity:.9}, plant);
+const stem = mk("path", {fill:"none", stroke:"#386641", "stroke-linecap":"round"}, plant);
+const canopy = mk("circle", {fill:"#4c6b3a", opacity:.9}, plant);
 const leaves = [];
-for (let i=0;i<6;i++) leaves.push(mk("ellipse", {fill:"#57a95e"}, plant));
-const fruit = mk("circle", {fill:"#e8863a", opacity:0}, plant);
+for (let i=0;i<6;i++) leaves.push(mk("ellipse", {fill:"#6a994e"}, plant));
+const fruit = mk("circle", {fill:"#b08968", opacity:0}, plant);
 
 function drawPlant(b){ // b: biomasa 0..1
   const h = 18 + b*MAXH*(plantKind==="frutal"?1:0.8);
@@ -142,15 +156,15 @@ const CW=920, CH=240, padL=36, padB=24, padT=10, padR=12;
 const X = t => padL + (CW-padL-padR)*t/T;
 const Y = v => padB + (CH-padB-padT)*(1 - v/100);
 [0,25,50,75,100].forEach(v=>{
-  mk("line",{x1:padL,y1:Y(v),x2:CW-padR,y2:Y(v),stroke:"#eee","stroke-width":1},chart);
-  mk("text",{x:padL-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:"#999"},chart).textContent=v;
+  mk("line",{x1:padL,y1:Y(v),x2:CW-padR,y2:Y(v),stroke:"#e6ecd6","stroke-width":1},chart);
+  mk("text",{x:padL-6,y:Y(v)+4,"text-anchor":"end","font-size":10,fill:"#8a987a"},chart).textContent=v;
 });
-for(let m=0;m<=Math.ceil(T/30);m++) mk("text",{x:X(m*30),y:CH-6,"text-anchor":"middle","font-size":10,fill:"#999"},chart).textContent=m+" m";
+for(let m=0;m<=Math.ceil(T/30);m++) mk("text",{x:X(m*30),y:CH-6,"text-anchor":"middle","font-size":10,fill:"#8a987a"},chart).textContent=m+" m";
 const line=(arr,c,scale=100)=>mk("polyline",{fill:"none",stroke:c,"stroke-width":2,points:days.map((d,i)=>X(d).toFixed(1)+","+Y(arr[i]*100/scale).toFixed(1)).join(" ")},chart);
-line(biomass,"var(--blue)",1);     // biomasa 0–1 → 0–100 %
+line(biomass,"var(--deep)",1);     // biomasa 0–1 → 0–100 %
 line(hum,"var(--green)",60);      // humedad 0–60 %
-line(nit,"var(--purple)",100);    // nitrógeno 0–100 ppm
-const cursor = mk("line",{y1:padT,y2:CH-padB,stroke:"#1a1a1a","stroke-width":1,opacity:.5},chart);
+line(nit,"var(--soil2)",100);    // nitrógeno 0–100 ppm
+const cursor = mk("line",{y1:padT,y2:CH-padB,stroke:"#22301f","stroke-width":1,opacity:.5},chart);
 
 /* ---------- controles / animación ---------- */
 let cur = 0, playing = false, last = null;
