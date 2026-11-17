@@ -89,7 +89,7 @@ select:focus,input[type=number]:focus{outline:none;border-color:var(--ok);box-sh
     <span class="pill">{{ totals.open_alerts }} alerta{{ totals.open_alerts|pluralize }} sin reconocer</span>
     <span class="grow"></span>
     <a class="btn ghost" href="/equipo/">Equipo</a>
-    <a class="btn ghost" href="/admin/">Administración</a>
+    <a class="btn ghost" href="/equipo/admin/">Administración</a>
     <a class="btn ghost" href="/api/v1/">API</a>
   </div>
   <div class="subtitle">Suelo, clima y cultivo en un solo panel · actualizado {% now "d/m/Y H:i" %}</div>
@@ -158,7 +158,7 @@ select:focus,input[type=number]:focus{outline:none;border-color:var(--ok);box-sh
           {% else %}<span class="v">sin datos</span>{% endif %}
         </div>
         {% empty %}
-        <div class="empty">Sin sondas instaladas. Cargar en <a href="/admin/monitoring/sensor/">admin</a>.</div>
+        <div class="empty">Sin sondas instaladas. Cargar en <a href="/equipo/admin/monitoring/sensor/">admin</a>.</div>
         {% endfor %}
       </div>
       <div class="col-4 box">
@@ -206,12 +206,12 @@ select:focus,input[type=number]:focus{outline:none;border-color:var(--ok);box-sh
     </div>
   </div>
   {% empty %}
-  <div class="parcel"><div class="empty">No hay parcelas cargadas. Crear la primera en <a href="/admin/soils/parcel/add/">administración</a>.</div></div>
+  <div class="parcel"><div class="empty">No hay parcelas cargadas. Crear la primera en <a href="/equipo/admin/soils/parcel/add/">administración</a>.</div></div>
   {% endfor %}
 
   <div class="foot">
     <span>ForestIA · plataforma de simulaciones agrícolas</span>
-    <a href="/admin/">Admin</a>
+    <a href="/equipo/admin/">Admin</a>
     <a href="/api/v1/">API REST</a>
     <span>Sincronizar clima: <code>python manage.py sync_weather</code></span>
   </div>

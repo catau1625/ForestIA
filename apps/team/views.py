@@ -312,3 +312,11 @@ def file_download(request, pk):
 @staff_member_required
 def meet(request):
     return render(request, "team/meet.html")
+
+
+@staff_member_required
+def logout_view(request):
+    from django.contrib.auth import logout
+
+    logout(request)
+    return redirect("/")

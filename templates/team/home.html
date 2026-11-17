@@ -51,7 +51,7 @@
     <span class="sub">{{ platform.profiles }} perfiles de suelo caracterizados</span>
     <span class="go">Abrir el panel de la plataforma →</span>
   </a>
-  <a class="tile span4" href="/admin/monitoring/sensor/">
+  <a class="tile span4" href="/equipo/admin/monitoring/sensor/">
     <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4.2 5.5 7 5.5 10a5.5 5.5 0 1 1-11 0C6.5 10 9 7.2 12 3z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/></svg></span>
     <span class="num">{{ platform.sensors_active }}</span>
     <span class="lbl">Sondas de suelo activas</span>
@@ -66,21 +66,21 @@
     <span class="sub">{% if platform.last_weather %}último registro {{ platform.last_weather.temp_c|floatformat:1 }} °C en «{{ platform.last_weather.parcel }}» · {{ platform.last_weather.timestamp|date:"d/m H:i" }}{% else %}sin registros aún{% endif %}</span>
     <span class="go">Abrir clima →</span>
   </a>
-  <a class="tile span4" href="/admin/monitoring/droneflight/">
+  <a class="tile span4" href="/equipo/admin/monitoring/droneflight/">
     <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="7" height="7" rx="1.5"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4"/><circle cx="4" cy="4" r="1.6"/><circle cx="20" cy="4" r="1.6"/><circle cx="4" cy="20" r="1.6"/><circle cx="20" cy="20" r="1.6"/></svg></span>
     <span class="num">{{ platform.flights }}</span>
     <span class="lbl">Vuelos de drone</span>
     <span class="sub">{% if platform.last_flight %}último en «{{ platform.last_flight.parcel }}» · NDVI {{ platform.last_flight.ndvi_mean|floatformat:2 }} · {{ platform.last_flight.flown_at|date:"d/m/Y" }}{% else %}sin vuelos aún{% endif %}</span>
     <span class="go">Ver vuelos →</span>
   </a>
-  <a class="tile span4" href="/admin/crops/plant/">
+  <a class="tile span4" href="/equipo/admin/crops/plant/">
     <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><path d="M12 13c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M12 13c0-3-2.4-5-5-5 0 3 2 5 5 5z"/></svg></span>
     <span class="num">{{ platform.plants }}</span>
     <span class="lbl">Especies en la base agronómica</span>
     <span class="sub">{{ platform.simulations }} simulaciones predictivas corridas</span>
     <span class="go">Ver especies →</span>
   </a>
-  <a class="tile span4 {% if platform.open_danger %}alert-hot{% endif %}" href="/admin/alerts/alert/">
+  <a class="tile span4 {% if platform.open_danger %}alert-hot{% endif %}" href="/equipo/admin/alerts/alert/">
     <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 15 18 9z"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg></span>
     <span class="num">{{ platform.open_alerts }}</span>
     <span class="lbl">Alertas sin reconocer</span>

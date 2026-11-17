@@ -23,4 +23,5 @@ urlpatterns = [
     path("archivos/archivo/<int:pk>/borrar/", views.file_delete, name="team-file-delete"),
     path("archivos/descargar/<int:pk>/", views.file_download, name="team-file-download"),
     path("reuniones/", views.meet, name="team-meet"),
+    path("salir/", views.logout_view, name="team-logout"),
 ]
