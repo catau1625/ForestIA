@@ -66,7 +66,7 @@ form.inline{display:inline}
         <a href="{% url 'team-files' %}" class="{% block nav_files %}{% endblock %}">Archivos</a>
         <a href="{% url 'team-meet' %}" class="{% block nav_meet %}{% endblock %}">Reuniones</a>
         <a href="/">Panel</a>
-        <a href="/equipo/admin/">Admin</a>
+        <a href="/admin/">Admin</a>
       </nav>
       <span class="who">👤 {{ user.username }} · <a href="{% url 'team-logout' %}">salir</a></span>
     </div>
