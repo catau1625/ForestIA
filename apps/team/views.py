@@ -189,7 +189,7 @@ def _files_context(folder):
     folders = Folder.objects.filter(parent=folder).select_related("created_by")
     files_qs = SharedFile.objects.filter(folder=folder).select_related("uploaded_by")
     crumbs = []
-    node = folder
+    node = folder.parent if folder else None
     while node:
         crumbs.append(node)
         node = node.parent
