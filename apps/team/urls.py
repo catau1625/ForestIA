@@ -24,6 +24,7 @@ urlpatterns = [
     path("archivos/archivo/<int:pk>/mover/", views.file_move, name="team-file-move"),
     path("archivos/archivo/<int:pk>/borrar/", views.file_delete, name="team-file-delete"),
     path("archivos/descargar/<int:pk>/", views.file_download, name="team-file-download"),
+    path("archivos/archivo/<int:pk>/ver/", views.file_preview, name="team-file-preview"),
     path("reuniones/", views.meet, name="team-meet"),
     path("salir/", views.logout_view, name="team-logout"),
 ]

@@ -1,9 +1,11 @@
 """Vistas de la intranet de equipo (requieren is_staff)."""
 import json
+import mimetypes
+import os
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -339,6 +341,47 @@ def file_delete(request, pk):
     if folder_id:
         return redirect("team-files-folder", folder_id=folder_id)
     return redirect("team-files")
+
+
+TEXT_EXT = {
+    ".txt", ".md", ".csv", ".json", ".log", ".xml", ".yaml", ".yml",
+    ".py", ".js", ".css", ".ts", ".ini", ".cfg", ".toml", ".svg", ".env",
+}
+IMG_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+
+
+@staff_member_required
+def file_preview(request, pk):
+    """Vista previa inline para el visor: imagenes, PDF y texto plano."""
+    sf = get_object_or_404(SharedFile, pk=pk)
+    ext = os.path.splitext(sf.filename)[1].lower()
+    if ext == ".pdf" or ext in IMG_EXT:
+        content_type = (
+            "application/pdf"
+            if ext == ".pdf"
+            else (mimetypes.guess_type(sf.filename)[0] or "application/octet-stream")
+        )
+        return FileResponse(
+            sf.file.open("rb"), content_type=content_type, as_attachment=False, filename=sf.filename
+        )
+    if ext in TEXT_EXT:
+        try:
+            size = sf.file.size
+        except Exception:  # noqa: BLE001
+            size = 0
+        if size > 2 * 1024 * 1024:
+            return JsonResponse(
+                {"error": "Archivo de texto muy grande para previsualizarlo (máx. 2 MB). Descárgalo."},
+                status=413,
+            )
+        raw = sf.file.open("rb").read().decode("utf-8", errors="replace")
+        if len(raw) > 200_000:
+            raw = raw[:200_000] + "\n\n… (vista previa truncada)"
+        return HttpResponse(raw, content_type="text/plain; charset=utf-8")
+    return JsonResponse(
+        {"error": "Este tipo de archivo no tiene vista previa. Usa el botón Descargar."},
+        status=415,
+    )
 
 
 @staff_member_required
