@@ -43,13 +43,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ok);box-
 form.inline{display:inline}
 /* columna de actividad */
 .feed{display:flex;flex-direction:column;gap:0}
-.feed-item{display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
+.feed-item{display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start;min-width:0}
 .feed-item:last-child{border-bottom:none}
 .feed-dot{flex:none;width:8px;height:8px;border-radius:50%;margin-top:5px}
 .feed-dot.add{background:var(--ok)}
 .feed-dot.change{background:var(--warn)}
 .feed-dot.delete{background:var(--danger)}
-.feed-item .when{margin-left:auto;color:var(--mut);font-size:11px;white-space:nowrap}
+.feed-txt{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;word-break:break-word;line-height:1.45}
+.feed-item .when{flex:none;margin-left:8px;color:var(--mut);font-size:11px;white-space:nowrap;line-height:1.45;padding-top:1px}
+@media(max-width:480px){.feed-item .when{white-space:normal;text-align:right}}
 </style>
 {% block extra_head %}{% endblock %}
 </head>
@@ -86,7 +88,7 @@ async function refreshFeed(){
     const d = await r.json();
     document.getElementById('feed').innerHTML = d.items.map(i=>
       '<div class="feed-item"><span class="feed-dot '+i.kind+'"></span>'+
-      '<span><b>'+esc(i.user)+'</b> '+esc(i.action)+' '+esc(i.target)+'</span>'+
+      '<span class="feed-txt"><b>'+esc(i.user)+'</b> '+esc(i.action)+' '+esc(i.target)+'</span>'+
       '<span class="when">'+esc(i.at)+'</span></div>'
     ).join('') || '<div class="muted">Sin actividad todavía.</div>';
   }catch(e){/* sin conexión: se reintenta en el próximo ciclo */}
