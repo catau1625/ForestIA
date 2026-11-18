@@ -317,6 +317,19 @@ def file_upload(request):
 
 @staff_member_required
 @require_POST
+def file_move(request, pk):
+    sf = get_object_or_404(SharedFile, pk=pk)
+    folder_id = request.POST.get("folder") or None
+    folder = get_object_or_404(Folder, pk=folder_id) if folder_id else None
+    sf.folder = folder
+    sf.save(update_fields=["folder"])
+    destino = folder.path_names() if folder else "raíz"
+    _log(request, Activity.CHANGE, f"el archivo «{sf.filename}» → carpeta «{destino}»", reverse("team-files"))
+    return JsonResponse({"ok": True})
+
+
+@staff_member_required
+@require_POST
 def file_delete(request, pk):
     sf = get_object_or_404(SharedFile, pk=pk)
     _log(request, Activity.DELETE, f"el archivo «{sf.filename}»", reverse("team-files"))

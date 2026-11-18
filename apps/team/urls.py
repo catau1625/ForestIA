@@ -21,6 +21,7 @@ urlpatterns = [
     path("archivos/<int:folder_id>/", views.files, name="team-files-folder"),
     path("archivos/carpeta/nueva/", views.folder_create, name="team-folder-create"),
     path("archivos/subir/", views.file_upload, name="team-file-upload"),
+    path("archivos/archivo/<int:pk>/mover/", views.file_move, name="team-file-move"),
     path("archivos/archivo/<int:pk>/borrar/", views.file_delete, name="team-file-delete"),
     path("archivos/descargar/<int:pk>/", views.file_download, name="team-file-download"),
     path("reuniones/", views.meet, name="team-meet"),
