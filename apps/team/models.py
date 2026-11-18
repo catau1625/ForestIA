@@ -53,7 +53,22 @@ class Activity(models.Model):
 
     @staticmethod
     def log(user, action, target, url=""):
-        Activity.objects.create(user=user, action=action, target=target[:220], url=url[:300])
+        act = Activity.objects.create(user=user, action=action, target=target[:220], url=url[:300])
+        Activity._notify(act)
+        return act
+
+    @staticmethod
+    def _notify(act):
+        """Encola el aviso por correo al resto del equipo (nunca rompe la vista)."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+        try:
+            from apps.team.tasks import notify_team_activity
+
+            notify_team_activity.delay(act.pk)
+        except Exception:  # noqa: BLE001
+            logger.exception("No se pudo encolar la notificación de la actividad %s", act.pk)
 
 
 class TaskList(models.Model):

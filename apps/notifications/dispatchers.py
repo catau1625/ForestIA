@@ -70,10 +70,41 @@ class TelegramDispatcher(BaseDispatcher):
 
 
 class EmailDispatcher(BaseDispatcher):
+    """Envío de alertas por correo vía SMTP (settings.EMAIL_*).
+
+    En ``channel.config`` puede definirse:
+        {"to": "correo@dominio.cl"}
+    o varios destinatarios:
+        {"recipients": ["a@x.cl", "b@x.cl"]}
+    """
+
     type_code = NotificationChannel.Type.EMAIL
 
     def send(self, alert, channel: NotificationChannel) -> DispatchResult:
-        return DispatchResult(ok=False, status="pending", detail="Canal email no implementado.")
+        from django.core.mail import send_mail
+
+        cfg = channel.config or {}
+        recipients = cfg.get("recipients") or ([cfg["to"]] if cfg.get("to") else [])
+        if not recipients:
+            return DispatchResult(
+                ok=False,
+                status="pending",
+                detail="Canal email sin destinatarios: configurar {'to': 'correo@...'} "
+                "o {'recipients': [...]} en el canal.",
+            )
+        subject = f"ForestIA · {alert.get_level_display()} en {alert.parcel}"
+        body = (
+            f"{alert.message}\n\n"
+            f"Parcela: {alert.parcel}\n"
+            f"Nivel: {alert.get_level_display()}\n"
+            f"Fecha: {alert.created_at:%d/%m/%Y %H:%M}\n\n"
+            f"— Alerta automática de ForestIA"
+        )
+        try:
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, recipients)
+        except Exception as exc:  # noqa: BLE001
+            return DispatchResult(ok=False, status="failed", detail=str(exc))
+        return DispatchResult(ok=True, status="sent", detail=f"Enviado a {len(recipients)} destinatario(s).")
 
 
 DISPATCHERS = {d.type_code: d for d in (WhatsAppDispatcher(), TelegramDispatcher(), EmailDispatcher())}
