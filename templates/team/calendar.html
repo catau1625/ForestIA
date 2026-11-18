@@ -20,13 +20,20 @@
   <p class="muted">Un solo calendario para todo el equipo. Haz clic en un día para agregar, o en un evento para verlo.</p>
 </div>
 <div class="card">
-  <form method="post" action="{% url 'team-event-create' %}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <form id="event-form" method="post" action="{% url 'team-event-create' %}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
     {% csrf_token %}
-    <input type="text" name="title" placeholder="Nuevo evento (ej. reunión de avance)" required style="flex:2;min-width:220px">
-    <input type="date" name="day" required value="{{ today|date:'Y-m-d' }}">
-    <input type="time" name="time" title="Vacío = todo el día">
-    <button class="btn" type="submit">Agregar al calendario</button>
+    <input type="hidden" name="ev_id" id="ev-id" value="">
+    <input type="text" name="title" id="ev-title" placeholder="Nuevo evento (ej. reunión de avance)" required style="flex:2;min-width:220px">
+    <input type="date" name="day" id="ev-day" required value="{{ today|date:'Y-m-d' }}">
+    <input type="time" name="time" id="ev-time" title="Vacío = todo el día">
+    <button class="btn" type="submit" id="ev-submit">Agregar al calendario</button>
+    <button class="btn ghost" type="button" id="ev-cancel" style="display:none" onclick="resetForm()">Cancelar</button>
   </form>
+  <form id="ev-delete-form" class="inline" method="post" action="" style="display:none;margin-top:8px" onsubmit="return confirm('¿Eliminar este evento del calendario?')">
+    {% csrf_token %}
+    <button class="btn danger small" type="submit">Eliminar evento</button>
+  </form>
+  <p class="muted" style="margin-top:8px" id="ev-hint">Haz clic en un día para agregar, o en un evento para editarlo.</p>
 </div>
 <div class="cal-wrap"><div id="calendar"></div></div>
 <div class="card" style="margin-top:16px">
@@ -51,6 +58,26 @@
 {% block scripts %}
 <script>
 const calendarEl = document.getElementById('calendar');
+const form = document.getElementById('event-form');
+const submitBtn = document.getElementById('ev-submit');
+const cancelBtn = document.getElementById('ev-cancel');
+const deleteForm = document.getElementById('ev-delete-form');
+const hint = document.getElementById('ev-hint');
+const createUrl = '{% url 'team-event-create' %}';
+const editUrlTpl = '{% url 'team-event-update' 0 %}';
+
+function resetForm(day) {
+  form.action = createUrl;
+  document.getElementById('ev-id').value = '';
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-day').value = day || '{{ today|date:'Y-m-d' }}';
+  document.getElementById('ev-time').value = '';
+  submitBtn.textContent = 'Agregar al calendario';
+  cancelBtn.style.display = 'none';
+  deleteForm.style.display = 'none';
+  hint.textContent = 'Haz clic en un día para agregar, o en un evento para editarlo.';
+}
+
 const calendar = new FullCalendar.Calendar(calendarEl, {
   locale: 'es',
   buttonText: {today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día', list: 'Lista'},
@@ -63,18 +90,26 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   headerToolbar: {left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek'},
   events: '{% url 'team-events-json' %}',
   dateClick: info => {
-    const day = info.dateStr;
-    const form = document.querySelector('form[action="{% url 'team-event-create' %}"]');
-    form.day.value = day;
-    form.title.focus();
+    resetForm(info.dateStr);
+    document.getElementById('ev-title').focus();
+    form.scrollIntoView({behavior: 'smooth', block: 'center'});
   },
   eventClick: info => {
-    if (confirm('¿Eliminar el evento «' + info.event.title + '»?')) {
-      fetch('{% url 'team-event-delete' 0 %}'.replace('/0/', '/' + info.event.id + '/'), {
-        method: 'POST',
-        headers: {'X-CSRFToken': '{{ csrf_token }}'},
-      }).then(() => info.event.remove());
-    }
+    const ev = info.event;
+    form.action = editUrlTpl.replace('/0/', '/' + ev.id + '/');
+    document.getElementById('ev-id').value = ev.id;
+    document.getElementById('ev-title').value = ev.title;
+    const d = ev.start;
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('ev-day').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    document.getElementById('ev-time').value = ev.allDay ? '' : pad(d.getHours()) + ':' + pad(d.getMinutes());
+    submitBtn.textContent = 'Guardar cambios';
+    cancelBtn.style.display = '';
+    deleteForm.action = '{% url 'team-event-delete' 0 %}'.replace('/0/', '/' + ev.id + '/');
+    deleteForm.style.display = '';
+    hint.textContent = 'Editando «' + ev.title + '». Guarda los cambios o elimina el evento.';
+    document.getElementById('ev-title').focus();
+    form.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 });
 calendar.render();

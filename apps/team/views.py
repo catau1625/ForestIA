@@ -7,6 +7,7 @@ from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from apps.alerts.models import Alert
@@ -109,6 +110,28 @@ def event_create(request):
 
 @staff_member_required
 @require_POST
+def event_update(request, pk):
+    ev = get_object_or_404(Event, pk=pk)
+    title = request.POST.get("title", "").strip()
+    day = request.POST.get("day", "")
+    time_ = request.POST.get("time", "")
+    if title and day:
+        start_str = f"{day}T{time_ or '09:00'}"
+        try:
+            start = timezone.datetime.fromisoformat(start_str)
+        except ValueError:
+            start = None
+        if start:
+            ev.title = title
+            ev.start = start
+            ev.all_day = not bool(time_)
+            ev.save(update_fields=["title", "start", "all_day"])
+            _log(request, Activity.CHANGE, f"el evento «{ev.title}»", reverse("team-calendar"))
+    return redirect("team-calendar")
+
+
+@staff_member_required
+@require_POST
 def event_delete(request, pk):
     ev = get_object_or_404(Event, pk=pk)
     _log(request, Activity.DELETE, f"el evento «{ev.title}»", reverse("team-calendar"))
@@ -118,6 +141,7 @@ def event_delete(request, pk):
 
 
 @staff_member_required
+@never_cache
 def events_json(request):
     events = [
         {
@@ -148,6 +172,7 @@ def _activity_payload(limit=40):
 
 
 @staff_member_required
+@never_cache
 def activity_json(request):
     return JsonResponse({"items": _activity_payload()})
 
