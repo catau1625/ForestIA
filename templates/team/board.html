@@ -5,6 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <style>
 .board{display:flex;gap:14px;align-items:flex-start;overflow-x:auto;padding-bottom:12px}
+@media(max-width:640px){.tlist{flex-basis:250px}}
 .tlist{flex:0 0 290px;background:var(--pale);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;max-height:70vh}
 .tlist-head{display:flex;align-items:center;gap:8px;padding:4px 6px 10px}
 .tlist-head h3{font-size:15px;font-weight:600;flex:1}
