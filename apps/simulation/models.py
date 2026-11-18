@@ -28,6 +28,8 @@ class SimulationRun(models.Model):
     finished_at = models.DateTimeField("finalizada el", null=True, blank=True)
 
     class Meta:
+        verbose_name = "simulación"
+        verbose_name_plural = "simulaciones"
         ordering = ["-created_at"]
 
     def __str__(self):

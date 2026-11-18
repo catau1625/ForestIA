@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -22,12 +23,9 @@ main{max-width:1080px;margin:0 auto;padding:24px 16px 48px}
 a{color:var(--deep);text-decoration:none}
 a:hover{text-decoration:underline}
 
-/* marca: wordmark estilo logo (o = hoja) */
+/* marca: logo oficial */
 .brand{display:flex;align-items:center;gap:10px}
-.wm{font-family:"Playfair Display",Georgia,serif;font-weight:600;font-size:26px;color:var(--ok);letter-spacing:.01em;position:relative;white-space:nowrap}
-.wm .o-slot{position:relative;display:inline-block;color:transparent}
-.wm .o-slot svg{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);height:.78em;width:auto}
-.wm .ia{color:var(--deep)}
+.logo{height:30px;width:auto;display:block}
 .brand-tag{font-size:11px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
 
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
@@ -81,7 +79,7 @@ select:focus,input[type=number]:focus{outline:none;border-color:var(--ok);box-sh
 <main>
   <div class="topbar">
     <div class="brand">
-      <span class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#6A994E"/><path d="M0-11 L0 11" stroke="#DCE8B4" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></span>
+      <img class="logo" src="{% static 'brand/forestia-logo.png' %}" alt="ForestIA">
       <span class="brand-tag">Simulaciones agrícolas</span>
     </div>
     <span class="pill">{{ totals.parcels }} parcela{{ totals.parcels|pluralize }}</span>

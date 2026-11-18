@@ -24,6 +24,8 @@ class Plant(models.Model):
     notes = models.TextField("notas", blank=True)
 
     class Meta:
+        verbose_name = "especie"
+        verbose_name_plural = "especies"
         ordering = ["name"]
 
     def __str__(self):
@@ -44,6 +46,8 @@ class CropStage(models.Model):
     potassium_ppm = models.FloatField("extracción de K (ppm)", default=0)
 
     class Meta:
+        verbose_name = "etapa fenológica"
+        verbose_name_plural = "etapas fenológicas"
         ordering = ["plant", "order"]
 
     def __str__(self):

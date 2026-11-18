@@ -23,6 +23,8 @@ class WeatherRecord(models.Model):
     source = models.CharField("fuente", max_length=15, choices=Source.choices, default=Source.OPEN_METEO)
 
     class Meta:
+        verbose_name = "registro climático"
+        verbose_name_plural = "registros climáticos"
         ordering = ["-timestamp"]
         indexes = [models.Index(fields=["parcel", "timestamp"])]
 

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -18,10 +19,7 @@ a{color:var(--deep);text-decoration:none}
 a:hover{text-decoration:underline}
 .shell{display:grid;grid-template-columns:1fr 300px;gap:20px;max-width:1320px;margin:0 auto;padding:16px}
 @media(max-width:960px){.shell{grid-template-columns:1fr}}
-.wm{font-family:"Playfair Display",Georgia,serif;font-weight:600;font-size:24px;color:var(--ok);white-space:nowrap;letter-spacing:.01em}
-.wm .o-slot{position:relative;display:inline-block;color:transparent}
-.wm .o-slot svg{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);height:.78em;width:auto}
-.wm .ia{color:var(--deep)}
+.logo{height:26px;width:auto;display:block}
 .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 18px;margin-bottom:16px}
 .top nav{display:flex;gap:4px;flex-wrap:wrap}
 .top nav a{padding:6px 12px;border-radius:8px;font-size:14px;color:var(--mut)}
@@ -58,7 +56,7 @@ form.inline{display:inline}
 <div class="shell">
   <div>
     <div class="top">
-      <span class="wm">F<span class="o-slot">o<svg viewBox="-14 -16 28 32" aria-hidden="true"><path d="M0-14 C8-10 10 2 0 14 C-10 2 -8-10 0-14 Z" fill="#6A994E"/><path d="M0-11 L0 11" stroke="#DCE8B4" stroke-width="1.6"/></svg></span>rest<span class="ia">IA</span></span>
+      <a href="{% url 'team-home' %}"><img class="logo" src="{% static 'brand/forestia-logo.png' %}" alt="ForestIA"></a>
       <nav>
         <a href="{% url 'team-home' %}" class="{% block nav_home %}{% endblock %}">Inicio</a>
         <a href="{% url 'team-calendar' %}" class="{% block nav_cal %}{% endblock %}">Calendario</a>

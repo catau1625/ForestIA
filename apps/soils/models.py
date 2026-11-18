@@ -12,6 +12,8 @@ class Parcel(models.Model):
     area_ha = models.FloatField("superficie (ha)", null=True, blank=True)
 
     class Meta:
+        verbose_name = "parcela"
+        verbose_name_plural = "parcelas"
         ordering = ["name"]
 
     def __str__(self):
@@ -37,6 +39,8 @@ class SoilProfile(models.Model):
     notes = models.TextField("notas", blank=True)
 
     class Meta:
+        verbose_name = "perfil de suelo"
+        verbose_name_plural = "perfiles de suelo"
         ordering = ["-sampled_at"]
 
     def __str__(self):
@@ -57,6 +61,8 @@ class SoilLayer(models.Model):
     bulk_density = models.FloatField("densidad aparente (g/cm³)", null=True, blank=True)
 
     class Meta:
+        verbose_name = "capa de suelo"
+        verbose_name_plural = "capas de suelo"
         ordering = ["depth_from_cm"]
 
     def __str__(self):

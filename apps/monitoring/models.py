@@ -28,6 +28,8 @@ class Sensor(models.Model):
     is_active = models.BooleanField("activo", default=True)
 
     class Meta:
+        verbose_name = "sonda"
+        verbose_name_plural = "sondas"
         ordering = ["parcel", "depth_cm"]
 
     def __str__(self):
@@ -45,6 +47,8 @@ class SensorReading(models.Model):
     battery_pct = models.FloatField("batería (%)", null=True, blank=True)
 
     class Meta:
+        verbose_name = "lectura de sonda"
+        verbose_name_plural = "lecturas de sonda"
         ordering = ["-timestamp"]
         indexes = [models.Index(fields=["sensor", "timestamp"])]
 
@@ -64,6 +68,8 @@ class DroneFlight(models.Model):
     zoning_map = models.FileField("mapa de zonas de manejo", upload_to="drones/", null=True, blank=True)
 
     class Meta:
+        verbose_name = "vuelo de drone"
+        verbose_name_plural = "vuelos de drone"
         ordering = ["-flown_at"]
 
     def __str__(self):

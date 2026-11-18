@@ -17,6 +17,8 @@ class Alert(models.Model):
     acknowledged = models.BooleanField("reconocida", default=False)
 
     class Meta:
+        verbose_name = "alerta"
+        verbose_name_plural = "alertas"
         ordering = ["-created_at"]
 
     def __str__(self):
