@@ -82,7 +82,7 @@ form.inline{display:inline}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function refreshFeed(){
   try{
-    const r = await fetch('{% url 'team-activity-json' %}');
+    const r = await fetch('{% url 'team-activity-json' %}', {cache: 'no-store'});
     const d = await r.json();
     document.getElementById('feed').innerHTML = d.items.map(i=>
       '<div class="feed-item"><span class="feed-dot '+i.kind+'"></span>'+

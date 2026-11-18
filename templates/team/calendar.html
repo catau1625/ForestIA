@@ -88,7 +88,9 @@ const calendar = new FullCalendar.Calendar(calendarEl, {
   initialView: 'dayGridMonth',
   height: 'auto',
   headerToolbar: {left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek'},
-  events: '{% url 'team-events-json' %}',
+  // extraParams dinamico: cada consulta va con URL unica para que ni el
+  // navegador ni Cloudflare sirvan una lista de eventos cacheada (vacia).
+  events: {url: '{% url 'team-events-json' %}', extraParams: () => ({v: Date.now()})},
   dateClick: info => {
     resetForm(info.dateStr);
     document.getElementById('ev-title').focus();
